@@ -1,0 +1,260 @@
+﻿id;pai_id;nivel;nome;caminho;ordem
+1;;1;Motor;Motor;1
+2;1;2;Bloco do Motor e Componentes Internos;Motor > Bloco do Motor e Componentes Internos;2
+3;2;3;Bloco do Motor;Motor > Bloco do Motor e Componentes Internos > Bloco do Motor;3
+4;2;3;Virabrequim e Bronzinas;Motor > Bloco do Motor e Componentes Internos > Virabrequim e Bronzinas;4
+5;2;3;Bielas e Pistões;Motor > Bloco do Motor e Componentes Internos > Bielas e Pistões;5
+6;2;3;Anéis de Segmento;Motor > Bloco do Motor e Componentes Internos > Anéis de Segmento;6
+7;2;3;Camisas de Cilindro;Motor > Bloco do Motor e Componentes Internos > Camisas de Cilindro;7
+8;1;2;Cabeçote e Componentes;Motor > Cabeçote e Componentes;8
+9;8;3;Cabeçote;Motor > Cabeçote e Componentes > Cabeçote;9
+10;8;3;Válvulas (Admissão, Escape);Motor > Cabeçote e Componentes > Válvulas (Admissão, Escape);10
+11;8;3;Comandos de Válvulas;Motor > Cabeçote e Componentes > Comandos de Válvulas;11
+12;8;3;Tuchos e Balancins;Motor > Cabeçote e Componentes > Tuchos e Balancins;12
+13;8;3;Juntas de Cabeçote;Motor > Cabeçote e Componentes > Juntas de Cabeçote;13
+14;1;2;Sistema de Lubrificação;Motor > Sistema de Lubrificação;14
+15;14;3;Bomba de Óleo;Motor > Sistema de Lubrificação > Bomba de Óleo;15
+16;14;3;Filtro de Óleo;Motor > Sistema de Lubrificação > Filtro de Óleo;16
+17;14;3;Cárter;Motor > Sistema de Lubrificação > Cárter;17
+18;14;3;Sensores de Óleo (Nível, Pressão);Motor > Sistema de Lubrificação > Sensores de Óleo (Nível, Pressão);18
+19;1;2;Sistema de Alimentação (Combustível);Motor > Sistema de Alimentação (Combustível);19
+20;19;3;Bomba de Combustível (Elétrica, Mecânica);Motor > Sistema de Alimentação (Combustível) > Bomba de Combustível (Elétrica, Mecânica);20
+21;19;3;Filtro de Combustível;Motor > Sistema de Alimentação (Combustível) > Filtro de Combustível;21
+22;19;3;Bicos Injetores/Carburador;Motor > Sistema de Alimentação (Combustível) > Bicos Injetores/Carburador;22
+23;19;3;Tanque de Combustível;Motor > Sistema de Alimentação (Combustível) > Tanque de Combustível;23
+24;19;3;Sensores (Boia, Fluxo de Ar - MAF);Motor > Sistema de Alimentação (Combustível) > Sensores (Boia, Fluxo de Ar - MAF);24
+25;19;3;Corpo de Borboleta (TBI);Motor > Sistema de Alimentação (Combustível) > Corpo de Borboleta (TBI);25
+26;1;2;Sistema de Ignição;Motor > Sistema de Ignição;26
+27;26;3;Velas de Ignição;Motor > Sistema de Ignição > Velas de Ignição;27
+28;26;3;Cabos de Vela;Motor > Sistema de Ignição > Cabos de Vela;28
+29;26;3;Bobinas de Ignição;Motor > Sistema de Ignição > Bobinas de Ignição;29
+30;26;3;Módulo de Ignição/Distribuidor;Motor > Sistema de Ignição > Módulo de Ignição/Distribuidor;30
+31;1;2;Superalimentação (Turbo/Compressor);Motor > Superalimentação (Turbo/Compressor);31
+32;31;3;Turbocompressor;Motor > Superalimentação (Turbo/Compressor) > Turbocompressor;32
+33;31;3;Intercooler;Motor > Superalimentação (Turbo/Compressor) > Intercooler;33
+34;31;3;Válvulas (Wastegate, Alívio);Motor > Superalimentação (Turbo/Compressor) > Válvulas (Wastegate, Alívio);34
+35;1;2;Correias e Polias;Motor > Correias e Polias;35
+36;35;3;Correia Dentada/Comando;Motor > Correias e Polias > Correia Dentada/Comando;36
+37;35;3;Correia de Acessórios (Alternador, Ar Condicionado, Direção Hidráulica);Motor > Correias e Polias > Correia de Acessórios (Alternador, Ar Condicionado, Direção Hidráulica);37
+38;35;3;Polias e Tensionadores;Motor > Correias e Polias > Polias e Tensionadores;38
+39;1;2;Coxins e Suportes do Motor;Motor > Coxins e Suportes do Motor;39
+40;39;3;Coxins do Motor;Motor > Coxins e Suportes do Motor > Coxins do Motor;40
+41;39;3;Suportes Diversos;Motor > Coxins e Suportes do Motor > Suportes Diversos;41
+42;;1;Transmissão;Transmissão;42
+43;42;2;Embreagem;Transmissão > Embreagem;43
+44;43;3;Platô e Disco;Transmissão > Embreagem > Platô e Disco;44
+45;43;3;Rolamento de Embreagem/Atuador Hidráulico;Transmissão > Embreagem > Rolamento de Embreagem/Atuador Hidráulico;45
+46;43;3;Cilindro Mestre e Auxiliar;Transmissão > Embreagem > Cilindro Mestre e Auxiliar;46
+47;43;3;Cabos e Garfos;Transmissão > Embreagem > Cabos e Garfos;47
+48;42;2;Caixa de Câmbio (Manual);Transmissão > Caixa de Câmbio (Manual);48
+49;48;3;Engrenagens e Sincronizadores;Transmissão > Caixa de Câmbio (Manual) > Engrenagens e Sincronizadores;49
+50;48;3;Eixos (Primário, Secundário);Transmissão > Caixa de Câmbio (Manual) > Eixos (Primário, Secundário);50
+51;48;3;Rolamentos e Retentores;Transmissão > Caixa de Câmbio (Manual) > Rolamentos e Retentores;51
+52;48;3;Alavanca e Trambulador;Transmissão > Caixa de Câmbio (Manual) > Alavanca e Trambulador;52
+53;48;3;Carcaça e Juntas;Transmissão > Caixa de Câmbio (Manual) > Carcaça e Juntas;53
+54;42;2;Caixa de Câmbio (Automática / Automatizada);Transmissão > Caixa de Câmbio (Automática / Automatizada);54
+55;54;3;Conversor de Torque;Transmissão > Caixa de Câmbio (Automática / Automatizada) > Conversor de Torque;55
+56;54;3;Corpo de Válvulas;Transmissão > Caixa de Câmbio (Automática / Automatizada) > Corpo de Válvulas;56
+57;54;3;Discos e Cintas;Transmissão > Caixa de Câmbio (Automática / Automatizada) > Discos e Cintas;57
+58;54;3;Filtros e Juntas;Transmissão > Caixa de Câmbio (Automática / Automatizada) > Filtros e Juntas;58
+59;54;3;Módulos Eletrônicos;Transmissão > Caixa de Câmbio (Automática / Automatizada) > Módulos Eletrônicos;59
+60;54;3;Óleo/Fluido de Transmissão;Transmissão > Caixa de Câmbio (Automática / Automatizada) > Óleo/Fluido de Transmissão;60
+61;42;2;Diferencial;Transmissão > Diferencial;61
+62;61;3;Coroa e Pinhão;Transmissão > Diferencial > Coroa e Pinhão;62
+63;61;3;Satélites e Planetárias;Transmissão > Diferencial > Satélites e Planetárias;63
+64;61;3;Rolamentos e Retentores;Transmissão > Diferencial > Rolamentos e Retentores;64
+65;61;3;Carcaça e Juntas;Transmissão > Diferencial > Carcaça e Juntas;65
+66;42;2;Eixos de Transmissão e Homocinéticas;Transmissão > Eixos de Transmissão e Homocinéticas;66
+67;66;3;Semieixos;Transmissão > Eixos de Transmissão e Homocinéticas > Semieixos;67
+68;66;3;Juntas Homocinéticas (Fixa, Deslizante);Transmissão > Eixos de Transmissão e Homocinéticas > Juntas Homocinéticas (Fixa, Deslizante);68
+69;66;3;Coifas Homocinéticas;Transmissão > Eixos de Transmissão e Homocinéticas > Coifas Homocinéticas;69
+70;66;3;Eixo Cardan (Tração Traseira/4x4);Transmissão > Eixos de Transmissão e Homocinéticas > Eixo Cardan (Tração Traseira/4x4);70
+71;66;3;Cruzetas e Flanges (Cardan);Transmissão > Eixos de Transmissão e Homocinéticas > Cruzetas e Flanges (Cardan);71
+72;42;2;Coxins e Suportes da Transmissão;Transmissão > Coxins e Suportes da Transmissão;72
+73;72;3;Coxins do Câmbio;Transmissão > Coxins e Suportes da Transmissão > Coxins do Câmbio;73
+74;;1;Freios;Freios;74
+75;74;2;Freio a Disco;Freios > Freio a Disco;75
+76;75;3;Discos de Freio;Freios > Freio a Disco > Discos de Freio;76
+77;75;3;Pastilhas de Freio;Freios > Freio a Disco > Pastilhas de Freio;77
+78;75;3;Pinças de Freio (e Reparos);Freios > Freio a Disco > Pinças de Freio (e Reparos);78
+79;75;3;Cavaletes de Pinça;Freios > Freio a Disco > Cavaletes de Pinça;79
+80;74;2;Freio a Tambor;Freios > Freio a Tambor;80
+81;80;3;Tambores de Freio;Freios > Freio a Tambor > Tambores de Freio;81
+82;80;3;Sapatas/Lonas de Freio;Freios > Freio a Tambor > Sapatas/Lonas de Freio;82
+83;80;3;Cilindros de Roda (Burrinho);Freios > Freio a Tambor > Cilindros de Roda (Burrinho);83
+84;80;3;Molas e Reguladores;Freios > Freio a Tambor > Molas e Reguladores;84
+85;74;2;Sistema Hidráulico de Freio;Freios > Sistema Hidráulico de Freio;85
+86;85;3;Cilindro Mestre;Freios > Sistema Hidráulico de Freio > Cilindro Mestre;86
+87;85;3;Servo Freio (Hidrovácuo);Freios > Sistema Hidráulico de Freio > Servo Freio (Hidrovácuo);87
+88;85;3;Reservatório de Fluido;Freios > Sistema Hidráulico de Freio > Reservatório de Fluido;88
+89;85;3;Tubulações e Flexíveis;Freios > Sistema Hidráulico de Freio > Tubulações e Flexíveis;89
+90;85;3;Fluido de Freio;Freios > Sistema Hidráulico de Freio > Fluido de Freio;90
+91;74;2;Freio de Estacionamento (Mão);Freios > Freio de Estacionamento (Mão);91
+92;91;3;Cabos de Freio de Mão;Freios > Freio de Estacionamento (Mão) > Cabos de Freio de Mão;92
+93;91;3;Alavanca;Freios > Freio de Estacionamento (Mão) > Alavanca;93
+94;91;3;Componentes de Acionamento (no Tambor/Pinça);Freios > Freio de Estacionamento (Mão) > Componentes de Acionamento (no Tambor/Pinça);94
+95;74;2;Sistema ABS/Controle de Estabilidade;Freios > Sistema ABS/Controle de Estabilidade;95
+96;95;3;Módulo ABS/ESC;Freios > Sistema ABS/Controle de Estabilidade > Módulo ABS/ESC;96
+97;95;3;Sensores de Roda (ABS);Freios > Sistema ABS/Controle de Estabilidade > Sensores de Roda (ABS);97
+98;95;3;Unidade Hidráulica ABS;Freios > Sistema ABS/Controle de Estabilidade > Unidade Hidráulica ABS;98
+99;;1;Suspensão e Direção;Suspensão e Direção;99
+100;99;2;Suspensão Dianteira;Suspensão e Direção > Suspensão Dianteira;100
+101;100;3;Amortecedores Dianteiros;Suspensão e Direção > Suspensão Dianteira > Amortecedores Dianteiros;101
+102;100;3;Molas Helicoidais Dianteiras;Suspensão e Direção > Suspensão Dianteira > Molas Helicoidais Dianteiras;102
+103;100;3;Bandejas/Braços de Suspensão;Suspensão e Direção > Suspensão Dianteira > Bandejas/Braços de Suspensão;103
+104;100;3;Pivôs de Suspensão;Suspensão e Direção > Suspensão Dianteira > Pivôs de Suspensão;104
+105;100;3;Buchas (Bandeja, Barra Estabilizadora);Suspensão e Direção > Suspensão Dianteira > Buchas (Bandeja, Barra Estabilizadora);105
+106;100;3;Barra Estabilizadora Dianteira;Suspensão e Direção > Suspensão Dianteira > Barra Estabilizadora Dianteira;106
+107;100;3;Bieletas Dianteiras;Suspensão e Direção > Suspensão Dianteira > Bieletas Dianteiras;107
+108;100;3;Coxins e Batentes do Amortecedor;Suspensão e Direção > Suspensão Dianteira > Coxins e Batentes do Amortecedor;108
+109;99;2;Suspensão Traseira;Suspensão e Direção > Suspensão Traseira;109
+110;109;3;Amortecedores Traseiros;Suspensão e Direção > Suspensão Traseira > Amortecedores Traseiros;110
+111;109;3;Molas Traseiras (Helicoidais, Feixe de Molas);Suspensão e Direção > Suspensão Traseira > Molas Traseiras (Helicoidais, Feixe de Molas);111
+112;109;3;Eixo de Torção/Eixo Rígido;Suspensão e Direção > Suspensão Traseira > Eixo de Torção/Eixo Rígido;112
+113;109;3;Braços de Suspensão Traseira (Multilink, etc.);Suspensão e Direção > Suspensão Traseira > Braços de Suspensão Traseira (Multilink, etc.);113
+114;109;3;Buchas Traseiras;Suspensão e Direção > Suspensão Traseira > Buchas Traseiras;114
+115;109;3;Barra Estabilizadora Traseira;Suspensão e Direção > Suspensão Traseira > Barra Estabilizadora Traseira;115
+116;109;3;Bieletas Traseiras;Suspensão e Direção > Suspensão Traseira > Bieletas Traseiras;116
+117;99;2;Sistema de Direção;Suspensão e Direção > Sistema de Direção;117
+118;117;3;Caixa de Direção (Mecânica, Hidráulica, Elétrica);Suspensão e Direção > Sistema de Direção > Caixa de Direção (Mecânica, Hidráulica, Elétrica);118
+119;117;3;Bomba de Direção Hidráulica;Suspensão e Direção > Sistema de Direção > Bomba de Direção Hidráulica;119
+120;117;3;Terminais de Direção;Suspensão e Direção > Sistema de Direção > Terminais de Direção;120
+121;117;3;Barras Axiais/Braços de Direção;Suspensão e Direção > Sistema de Direção > Barras Axiais/Braços de Direção;121
+122;117;3;Coluna de Direção;Suspensão e Direção > Sistema de Direção > Coluna de Direção;122
+123;117;3;Volante;Suspensão e Direção > Sistema de Direção > Volante;123
+124;117;3;Fluido de Direção Hidráulica;Suspensão e Direção > Sistema de Direção > Fluido de Direção Hidráulica;124
+125;99;2;Rodas e Pneus;Suspensão e Direção > Rodas e Pneus;125
+126;125;3;Rodas (Aço, Liga Leve);Suspensão e Direção > Rodas e Pneus > Rodas (Aço, Liga Leve);126
+127;125;3;Pneus;Suspensão e Direção > Rodas e Pneus > Pneus;127
+128;125;3;Calotas;Suspensão e Direção > Rodas e Pneus > Calotas;128
+129;125;3;Parafusos e Porcas de Roda;Suspensão e Direção > Rodas e Pneus > Parafusos e Porcas de Roda;129
+130;125;3;Rolamentos de Roda;Suspensão e Direção > Rodas e Pneus > Rolamentos de Roda;130
+131;125;3;Cubos de Roda;Suspensão e Direção > Rodas e Pneus > Cubos de Roda;131
+132;;1;Elétrico;Elétrico;132
+133;132;2;Geração e Armazenamento de Energia;Elétrico > Geração e Armazenamento de Energia;133
+134;133;3;Bateria;Elétrico > Geração e Armazenamento de Energia > Bateria;134
+135;133;3;Alternador;Elétrico > Geração e Armazenamento de Energia > Alternador;135
+136;133;3;Regulador de Voltagem;Elétrico > Geração e Armazenamento de Energia > Regulador de Voltagem;136
+137;132;2;Partida do Motor;Elétrico > Partida do Motor;137
+138;137;3;Motor de Partida (Arranque);Elétrico > Partida do Motor > Motor de Partida (Arranque);138
+139;137;3;Solenoide/Automático de Partida;Elétrico > Partida do Motor > Solenoide/Automático de Partida;139
+140;132;2;Iluminação;Elétrico > Iluminação;140
+141;140;3;Faróis (Bloco Óptico);Elétrico > Iluminação > Faróis (Bloco Óptico);141
+142;140;3;Lanternas Traseiras;Elétrico > Iluminação > Lanternas Traseiras;142
+143;140;3;Setas/Piscas;Elétrico > Iluminação > Setas/Piscas;143
+144;140;3;Luzes Internas;Elétrico > Iluminação > Luzes Internas;144
+145;140;3;Lâmpadas Diversas;Elétrico > Iluminação > Lâmpadas Diversas;145
+146;140;3;Relés e Módulos de Iluminação;Elétrico > Iluminação > Relés e Módulos de Iluminação;146
+147;132;2;Painel de Instrumentos e Sensores;Elétrico > Painel de Instrumentos e Sensores;147
+148;147;3;Painel de Instrumentos Completo;Elétrico > Painel de Instrumentos e Sensores > Painel de Instrumentos Completo;148
+149;147;3;Sensores Diversos (Temperatura, Velocidade, Rotação, etc.);Elétrico > Painel de Instrumentos e Sensores > Sensores Diversos (Temperatura, Velocidade, Rotação, etc.);149
+150;147;3;Boia de Combustível;Elétrico > Painel de Instrumentos e Sensores > Boia de Combustível;150
+151;132;2;Módulos Eletrônicos e ECU;Elétrico > Módulos Eletrônicos e ECU;151
+152;151;3;Módulo de Injeção (ECU);Elétrico > Módulos Eletrônicos e ECU > Módulo de Injeção (ECU);152
+153;151;3;Módulo de Conforto (BCM);Elétrico > Módulos Eletrônicos e ECU > Módulo de Conforto (BCM);153
+154;151;3;Módulo de Airbag;Elétrico > Módulos Eletrônicos e ECU > Módulo de Airbag;154
+155;151;3;Outros Módulos (ABS, Transmissão, etc.);Elétrico > Módulos Eletrônicos e ECU > Outros Módulos (ABS, Transmissão, etc.);155
+156;132;2;Chicotes e Conectores;Elétrico > Chicotes e Conectores;156
+157;156;3;Chicote Principal do Motor;Elétrico > Chicotes e Conectores > Chicote Principal do Motor;157
+158;156;3;Chicotes Internos/Carroceria;Elétrico > Chicotes e Conectores > Chicotes Internos/Carroceria;158
+159;156;3;Conectores Diversos;Elétrico > Chicotes e Conectores > Conectores Diversos;159
+160;132;2;Componentes Elétricos Diversos;Elétrico > Componentes Elétricos Diversos;160
+161;160;3;Buzina;Elétrico > Componentes Elétricos Diversos > Buzina;161
+162;160;3;Limpador de Para-brisa (Motor, Braços, Palhetas);Elétrico > Componentes Elétricos Diversos > Limpador de Para-brisa (Motor, Braços, Palhetas);162
+163;160;3;Vidros Elétricos (Máquinas, Motores, Interruptores);Elétrico > Componentes Elétricos Diversos > Vidros Elétricos (Máquinas, Motores, Interruptores);163
+164;160;3;Travas Elétricas (Atuadores, Módulos);Elétrico > Componentes Elétricos Diversos > Travas Elétricas (Atuadores, Módulos);164
+165;160;3;Relés e Fusíveis;Elétrico > Componentes Elétricos Diversos > Relés e Fusíveis;165
+166;;1;Carroceria e Acabamento;Carroceria e Acabamento;166
+167;166;2;Lataria;Carroceria e Acabamento > Lataria;167
+168;167;3;Capô;Carroceria e Acabamento > Lataria > Capô;168
+169;167;3;Para-lamas;Carroceria e Acabamento > Lataria > Para-lamas;169
+170;167;3;Portas;Carroceria e Acabamento > Lataria > Portas;170
+171;167;3;Tampa Traseira/Porta-malas;Carroceria e Acabamento > Lataria > Tampa Traseira/Porta-malas;171
+172;167;3;Teto;Carroceria e Acabamento > Lataria > Teto;172
+173;167;3;Painéis Laterais;Carroceria e Acabamento > Lataria > Painéis Laterais;173
+174;166;2;Para-choques e Grades;Carroceria e Acabamento > Para-choques e Grades;174
+175;174;3;Para-choque Dianteiro (Capa, Alma);Carroceria e Acabamento > Para-choques e Grades > Para-choque Dianteiro (Capa, Alma);175
+176;174;3;Para-choque Traseiro (Capa, Alma);Carroceria e Acabamento > Para-choques e Grades > Para-choque Traseiro (Capa, Alma);176
+177;174;3;Grade Frontal;Carroceria e Acabamento > Para-choques e Grades > Grade Frontal;177
+178;166;2;Vidros e Espelhos;Carroceria e Acabamento > Vidros e Espelhos;178
+179;178;3;Para-brisa;Carroceria e Acabamento > Vidros e Espelhos > Para-brisa;179
+180;178;3;Vidro Traseiro (Vigia);Carroceria e Acabamento > Vidros e Espelhos > Vidro Traseiro (Vigia);180
+181;178;3;Vidros das Portas;Carroceria e Acabamento > Vidros e Espelhos > Vidros das Portas;181
+182;178;3;Retrovisores Externos (Completos, Lentes, Capas);Carroceria e Acabamento > Vidros e Espelhos > Retrovisores Externos (Completos, Lentes, Capas);182
+183;178;3;Retrovisor Interno;Carroceria e Acabamento > Vidros e Espelhos > Retrovisor Interno;183
+184;166;2;Acabamentos Externos;Carroceria e Acabamento > Acabamentos Externos;184
+185;184;3;Frisos e Borrachões;Carroceria e Acabamento > Acabamentos Externos > Frisos e Borrachões;185
+186;184;3;Maçanetas Externas;Carroceria e Acabamento > Acabamentos Externos > Maçanetas Externas;186
+187;184;3;Emblemas;Carroceria e Acabamento > Acabamentos Externos > Emblemas;187
+188;166;2;Acabamentos Internos;Carroceria e Acabamento > Acabamentos Internos;188
+189;188;3;Painel Interno (Tabelier);Carroceria e Acabamento > Acabamentos Internos > Painel Interno (Tabelier);189
+190;188;3;Forros de Porta;Carroceria e Acabamento > Acabamentos Internos > Forros de Porta;190
+191;188;3;Forro de Teto;Carroceria e Acabamento > Acabamentos Internos > Forro de Teto;191
+192;188;3;Tapetes e Carpetes;Carroceria e Acabamento > Acabamentos Internos > Tapetes e Carpetes;192
+193;188;3;Bancos (e Componentes);Carroceria e Acabamento > Acabamentos Internos > Bancos (e Componentes);193
+194;188;3;Maçanetas Internas;Carroceria e Acabamento > Acabamentos Internos > Maçanetas Internas;194
+195;188;3;Cintos de Segurança;Carroceria e Acabamento > Acabamentos Internos > Cintos de Segurança;195
+196;188;3;Airbags;Carroceria e Acabamento > Acabamentos Internos > Airbags;196
+197;;1;Climatização (Ar Condicionado e Aquecimento);Climatização (Ar Condicionado e Aquecimento);197
+198;197;2;Ar Condicionado;Climatização (Ar Condicionado e Aquecimento) > Ar Condicionado;198
+199;198;3;Compressor do Ar Condicionado;Climatização (Ar Condicionado e Aquecimento) > Ar Condicionado > Compressor do Ar Condicionado;199
+200;198;3;Condensador;Climatização (Ar Condicionado e Aquecimento) > Ar Condicionado > Condensador;200
+201;198;3;Evaporador;Climatização (Ar Condicionado e Aquecimento) > Ar Condicionado > Evaporador;201
+202;198;3;Filtro de Cabine/Anti-pólen;Climatização (Ar Condicionado e Aquecimento) > Ar Condicionado > Filtro de Cabine/Anti-pólen;202
+203;198;3;Válvula de Expansão;Climatização (Ar Condicionado e Aquecimento) > Ar Condicionado > Válvula de Expansão;203
+204;198;3;Pressostatos e Sensores;Climatização (Ar Condicionado e Aquecimento) > Ar Condicionado > Pressostatos e Sensores;204
+205;198;3;Mangueiras e Tubulações;Climatização (Ar Condicionado e Aquecimento) > Ar Condicionado > Mangueiras e Tubulações;205
+206;198;3;Gás Refrigerante;Climatização (Ar Condicionado e Aquecimento) > Ar Condicionado > Gás Refrigerante;206
+207;197;2;Aquecimento / Ventilação;Climatização (Ar Condicionado e Aquecimento) > Aquecimento / Ventilação;207
+208;207;3;Radiador de Ar Quente;Climatização (Ar Condicionado e Aquecimento) > Aquecimento / Ventilação > Radiador de Ar Quente;208
+209;207;3;Motor do Ventilador Interno (Ventoinha);Climatização (Ar Condicionado e Aquecimento) > Aquecimento / Ventilação > Motor do Ventilador Interno (Ventoinha);209
+210;207;3;Resistência da Ventilação;Climatização (Ar Condicionado e Aquecimento) > Aquecimento / Ventilação > Resistência da Ventilação;210
+211;207;3;Comandos do Ar/Ventilação;Climatização (Ar Condicionado e Aquecimento) > Aquecimento / Ventilação > Comandos do Ar/Ventilação;211
+212;;1;Arrefecimento do Motor;Arrefecimento do Motor;212
+213;212;2;Radiador e Componentes;Arrefecimento do Motor > Radiador e Componentes;213
+214;213;3;Radiador de Água;Arrefecimento do Motor > Radiador e Componentes > Radiador de Água;214
+215;213;3;Ventoinha do Radiador (Eletroventilador);Arrefecimento do Motor > Radiador e Componentes > Ventoinha do Radiador (Eletroventilador);215
+216;213;3;Defletor da Ventoinha;Arrefecimento do Motor > Radiador e Componentes > Defletor da Ventoinha;216
+217;212;2;Circulação de Água;Arrefecimento do Motor > Circulação de Água;217
+218;217;3;Bomba D'água;Arrefecimento do Motor > Circulação de Água > Bomba D'água;218
+219;217;3;Válvula Termostática;Arrefecimento do Motor > Circulação de Água > Válvula Termostática;219
+220;217;3;Mangueiras do Radiador e Arrefecimento;Arrefecimento do Motor > Circulação de Água > Mangueiras do Radiador e Arrefecimento;220
+221;217;3;Reservatório de Expansão;Arrefecimento do Motor > Circulação de Água > Reservatório de Expansão;221
+222;217;3;Aditivo/Fluido de Arrefecimento;Arrefecimento do Motor > Circulação de Água > Aditivo/Fluido de Arrefecimento;222
+223;212;2;Sensores e Interruptores;Arrefecimento do Motor > Sensores e Interruptores;223
+224;223;3;Sensor de Temperatura da Água;Arrefecimento do Motor > Sensores e Interruptores > Sensor de Temperatura da Água;224
+225;223;3;Interruptor Térmico da Ventoinha (Cebolão);Arrefecimento do Motor > Sensores e Interruptores > Interruptor Térmico da Ventoinha (Cebolão);225
+226;;1;Exaustão (Escapamento);Exaustão (Escapamento);226
+227;226;2;Componentes Principais;Exaustão (Escapamento) > Componentes Principais;227
+228;227;3;Coletor de Escape;Exaustão (Escapamento) > Componentes Principais > Coletor de Escape;228
+229;227;3;Tubo Dianteiro/Intermediário/Traseiro;Exaustão (Escapamento) > Componentes Principais > Tubo Dianteiro/Intermediário/Traseiro;229
+230;227;3;Silencioso (Abafador) Dianteiro/Intermediário/Traseiro;Exaustão (Escapamento) > Componentes Principais > Silencioso (Abafador) Dianteiro/Intermediário/Traseiro;230
+231;227;3;Catalisador;Exaustão (Escapamento) > Componentes Principais > Catalisador;231
+232;226;2;Fixação e Vedação;Exaustão (Escapamento) > Fixação e Vedação;232
+233;232;3;Coxins e Suportes do Escapamento;Exaustão (Escapamento) > Fixação e Vedação > Coxins e Suportes do Escapamento;233
+234;232;3;Juntas e Anéis de Vedação;Exaustão (Escapamento) > Fixação e Vedação > Juntas e Anéis de Vedação;234
+235;232;3;Abraçadeiras;Exaustão (Escapamento) > Fixação e Vedação > Abraçadeiras;235
+236;226;2;Controle de Emissões;Exaustão (Escapamento) > Controle de Emissões;236
+237;236;3;Sonda Lambda (Sensor de Oxigênio);Exaustão (Escapamento) > Controle de Emissões > Sonda Lambda (Sensor de Oxigênio);237
+238;236;3;Válvula EGR;Exaustão (Escapamento) > Controle de Emissões > Válvula EGR;238
+239;;1;Acessórios e Diversos;Acessórios e Diversos;239
+240;239;2;Acessórios Externos;Acessórios e Diversos > Acessórios Externos;240
+241;240;3;Rack de Teto;Acessórios e Diversos > Acessórios Externos > Rack de Teto;241
+242;240;3;Engate para Reboque;Acessórios e Diversos > Acessórios Externos > Engate para Reboque;242
+243;240;3;Protetor de Cárter;Acessórios e Diversos > Acessórios Externos > Protetor de Cárter;243
+244;240;3;Películas (Insulfilm);Acessórios e Diversos > Acessórios Externos > Películas (Insulfilm);244
+245;239;2;Acessórios Internos;Acessórios e Diversos > Acessórios Internos;245
+246;245;3;Sistema de Som (Rádio, Alto-falantes);Acessórios e Diversos > Acessórios Internos > Sistema de Som (Rádio, Alto-falantes);246
+247;245;3;Alarmes e Rastreadores;Acessórios e Diversos > Acessórios Internos > Alarmes e Rastreadores;247
+248;245;3;Tapetes Personalizados;Acessórios e Diversos > Acessórios Internos > Tapetes Personalizados;248
+249;239;2;Ferramentas e Kits;Acessórios e Diversos > Ferramentas e Kits;249
+250;249;3;Macaco;Acessórios e Diversos > Ferramentas e Kits > Macaco;250
+251;249;3;Chave de Roda;Acessórios e Diversos > Ferramentas e Kits > Chave de Roda;251
+252;249;3;Triângulo de Sinalização;Acessórios e Diversos > Ferramentas e Kits > Triângulo de Sinalização;252
+253;239;2;Fluidos e Lubrificantes (Exceto Motor/Transmissão/Freio/Arrefecimento/Direção);Acessórios e Diversos > Fluidos e Lubrificantes (Exceto Motor/Transmissão/Freio/Arrefecimento/Direção);253
+254;253;3;Óleo para Diferencial (quando separado);Acessórios e Diversos > Fluidos e Lubrificantes (Exceto Motor/Transmissão/Freio/Arrefecimento/Direção) > Óleo para Diferencial (quando separado);254
+255;253;3;Graxas Específicas;Acessórios e Diversos > Fluidos e Lubrificantes (Exceto Motor/Transmissão/Freio/Arrefecimento/Direção) > Graxas Específicas;255
+256;253;3;Limpador de Para-brisa (Fluido);Acessórios e Diversos > Fluidos e Lubrificantes (Exceto Motor/Transmissão/Freio/Arrefecimento/Direção) > Limpador de Para-brisa (Fluido);256
+257;239;2;Manutenção Geral;Acessórios e Diversos > Manutenção Geral;257
+258;257;3;Filtro de Ar do Motor;Acessórios e Diversos > Manutenção Geral > Filtro de Ar do Motor;258
+259;257;3;Palhetas do Limpador;Acessórios e Diversos > Manutenção Geral > Palhetas do Limpador;259

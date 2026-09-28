@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Catálogo de peças</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --grafite:#22303A; --aco:#E6E9EC; --papel:#F7F8F9; --sinal:#F2B705; --tinta:#13191E; --cinza:#5E6D79;
+  --linha:#D3D8DD; --fundo:var(--papel); --painel:#FFFFFF; --texto:var(--tinta); --suave:var(--cinza);
+  --sel:#FFF4CC;
+  --sans:"Barlow","Segoe UI",Arial,sans-serif; --cond:"Barlow Condensed","Arial Narrow","Segoe UI",sans-serif;
+}
+@media (prefers-color-scheme:dark){:root{
+  --fundo:#161E24; --painel:#1D2830; --texto:#E6E9EC; --suave:#98A6B1; --linha:#2F3D47; --sel:#3A3316;}}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{font:15px/1.45 var(--sans);color:var(--texto);background:var(--fundo);display:flex;flex-direction:column}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--sinal);outline-offset:2px}
+
+header{background:var(--grafite);color:#fff;padding:10px 16px;display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center}
+header h1{font:600 22px/1 var(--cond);margin:0;letter-spacing:.3px;white-space:nowrap}
+header .base{font-size:13px;color:#B9C4CC;white-space:nowrap}
+.filtros{display:flex;flex-wrap:wrap;gap:8px;flex:1;justify-content:flex-end}
+.filtros input,.filtros select{background:#2E3F4B;border:1px solid #3F5260;border-radius:4px;padding:7px 10px;color:#fff;min-width:0}
+.filtros input::placeholder{color:#9FB0BC}
+#busca{flex:1 1 200px;max-width:380px}
+#modelo{flex:0 1 150px}
+#montadora{flex:0 1 170px}
+.btn{background:transparent;border:1px solid #4D6272;color:#fff;border-radius:4px;padding:7px 12px;cursor:pointer}
+.btn:hover{border-color:var(--sinal)}
+
+main{flex:1;display:grid;grid-template-columns:300px minmax(320px,1fr) minmax(360px,1.1fr);min-height:0}
+section{min-height:0;overflow:auto;border-right:1px solid var(--linha)}
+
+/* Abas de linha */
+#linhas{display:flex;flex-wrap:wrap;gap:4px;padding:10px 10px 8px;border-bottom:1px solid var(--linha);position:sticky;top:0;background:var(--painel);z-index:1}
+.aba{border:1px solid var(--linha);background:none;border-radius:4px;padding:5px 10px;cursor:pointer;font:600 15px/1.1 var(--cond);display:flex;gap:6px;align-items:baseline}
+.aba small{font:500 12px var(--sans);color:var(--suave)}
+.aba:hover{border-color:var(--sinal)}
+.aba[aria-pressed="true"]{background:var(--grafite);border-color:var(--grafite);color:#fff}
+.aba[aria-pressed="true"] small{color:#B9C4CC}
+.aba.vazia{opacity:.5}
+@media (prefers-color-scheme:dark){.aba[aria-pressed="true"]{background:var(--sinal);border-color:var(--sinal);color:var(--tinta)}.aba[aria-pressed="true"] small{color:var(--tinta)}}
+/* Árvore */
+#arvore{background:var(--painel);padding:0 0 8px}
+#nos{padding-top:6px}
+.no{display:flex;align-items:center;gap:6px;width:100%;text-align:left;background:none;border:0;padding:5px 12px;cursor:pointer;border-left:3px solid transparent}
+.no:hover{background:var(--aco)}
+@media (prefers-color-scheme:dark){.no:hover{background:#26343E}}
+.no.ativo{border-left-color:var(--sinal);background:var(--sel)}
+.no .seta{width:14px;flex:none;color:var(--suave);font-size:11px;transition:transform .15s}
+.no.aberto .seta{transform:rotate(90deg)}
+.no .nome{flex:1;min-width:0}
+.no .qtd{font:600 13px var(--cond);color:var(--suave);min-width:28px;text-align:right}
+.no.vazio{opacity:.45}
+.n1>.no .nome{font-weight:600}
+.n2>.no{padding-left:26px}
+.n3>.no{padding-left:48px;font-size:14px}
+.filhos{display:none}
+.aberto+.filhos{display:block}
+.sep{height:1px;background:var(--linha);margin:8px 12px}
+
+/* Lista */
+#lista{padding:0}
+.topo-lista{position:sticky;top:0;background:var(--fundo);padding:10px 16px;border-bottom:1px solid var(--linha);font-size:14px;color:var(--suave);z-index:1}
+.topo-lista strong{color:var(--texto)}
+.item{display:grid;grid-template-columns:auto 1fr;gap:2px 12px;padding:10px 16px;border-bottom:1px solid var(--linha);cursor:pointer;background:none;border-left:0;border-right:0;border-top:0;width:100%;text-align:left}
+.item:hover{background:var(--aco)}
+@media (prefers-color-scheme:dark){.item:hover{background:#22303A}}
+.item.ativo{background:var(--sel)}
+.item .cod{font:600 19px/1.2 var(--cond);grid-row:span 2;min-width:92px}
+.item .desc{font-weight:500}
+.item .pos{font-size:13px;color:var(--suave)}
+.mais{display:block;margin:14px auto;background:var(--grafite);color:#fff;border:0;border-radius:4px;padding:8px 18px;cursor:pointer}
+.vazio-msg{padding:32px 20px;color:var(--suave);max-width:46ch}
+
+/* Detalhe */
+#detalhe{background:var(--painel);border-right:0;padding:20px 24px 40px}
+.etiqueta{display:inline-flex;align-items:center;background:var(--sinal);color:var(--tinta);padding:4px 16px 4px 12px;font:700 40px/1 var(--cond);letter-spacing:.5px;
+  clip-path:polygon(0 0,calc(100% - 14px) 0,100% 50%,calc(100% - 14px) 100%,0 100%)}
+.etiqueta::before{content:"";width:9px;height:9px;border-radius:50%;background:var(--painel);margin-right:12px}
+#detalhe h2{font:600 22px/1.2 var(--cond);margin:14px 0 2px}
+.meta{color:var(--suave);font-size:14px;margin:0 0 14px}
+.fotos{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0 18px}
+.fotos img{max-width:100%;max-height:220px;background:#fff;border:1px solid var(--linha);border-radius:4px;padding:6px}
+.sem-foto{font-size:13px;color:var(--suave);border:1px dashed var(--linha);padding:10px 14px;border-radius:4px}
+.caminhos{margin:0 0 18px;padding:0;list-style:none}
+.caminhos li{font-size:14px;padding:3px 0}
+.caminhos .lin{font:600 13px var(--cond);background:var(--aco);color:var(--tinta);border-radius:3px;padding:1px 6px;margin-right:6px}
+.caminhos a{color:inherit;text-decoration:underline;text-decoration-color:var(--sinal);text-underline-offset:3px;cursor:pointer}
+h3{font:600 17px var(--cond);margin:22px 0 8px;padding-bottom:4px;border-bottom:2px solid var(--sinal);display:inline-block}
+.tabela{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th{text-align:left;font-weight:600;color:var(--suave);padding:6px 8px;border-bottom:1px solid var(--linha);white-space:nowrap}
+td{padding:6px 8px;border-bottom:1px solid var(--linha);vertical-align:top}
+.refs{display:flex;flex-wrap:wrap;gap:6px}
+.ref{border:1px solid var(--linha);border-radius:3px;padding:3px 8px;font-size:13px}
+.ref b{font-weight:600}
+.obs{background:var(--sel);padding:10px 12px;border-radius:4px;font-size:14px}
+
+/* Abertura */
+#abertura{position:fixed;inset:0;background:var(--grafite);color:#fff;display:flex;align-items:center;justify-content:center;z-index:10;padding:24px}
+#abertura .caixa{max-width:480px}
+#abertura h2{font:700 44px/1 var(--cond);margin:0 0 14px}
+#abertura p{color:#C5CFD6;margin:0 0 20px}
+#abertura label:not([hidden]){display:inline-block;background:var(--sinal);color:var(--tinta);font-weight:600;padding:10px 20px;border-radius:4px;cursor:pointer}
+#abertura input{position:absolute;left:-9999px}
+#abertura .solta:not([hidden]){margin-top:18px;border:2px dashed #4D6272;border-radius:6px;padding:18px;text-align:center;color:#9FB0BC}
+#abertura.arrastando .solta{border-color:var(--sinal);color:#fff}
+#abertura .erro{color:#FFB4A8;margin-top:12px}
+
+/* Informativos */
+#btn-inf[aria-pressed="true"]{background:var(--sinal);border-color:var(--sinal);color:var(--tinta)}
+body.modo-inf main{display:none}
+body.modo-inf .filtros{display:none}
+#informativos{display:none;flex:1;min-height:0;grid-template-columns:minmax(320px,440px) 1fr}
+body.modo-inf #informativos{display:grid}
+#inf-lista{background:var(--painel)}
+.inf-filtros{position:sticky;top:0;z-index:1;background:var(--painel);padding:10px 12px;border-bottom:1px solid var(--linha);display:flex;flex-wrap:wrap;gap:6px}
+.inf-filtros input,.inf-filtros select{background:var(--fundo);border:1px solid var(--linha);border-radius:4px;padding:6px 8px;min-width:0}
+#inf-busca{flex:1 1 100%}
+.inf-filtros select{flex:1 1 30%}
+.inf-total{padding:8px 12px;font-size:14px;color:var(--suave);border-bottom:1px solid var(--linha)}
+.inf-total strong{color:var(--texto)}
+.inf{display:grid;grid-template-columns:56px 1fr;gap:2px 12px;align-items:start;width:100%;text-align:left;background:none;border:0;border-bottom:1px solid var(--linha);padding:10px 12px;cursor:pointer}
+.inf:hover{background:var(--aco)}
+@media (prefers-color-scheme:dark){.inf:hover{background:#26343E}}
+.inf.ativo{background:var(--sel)}
+.inf img{grid-row:span 3;width:56px;height:78px;object-fit:cover;object-position:top;background:#fff;border:1px solid var(--linha);border-radius:3px}
+.inf .num{font:600 15px/1.2 var(--cond)}
+.inf .num span{font:400 13px var(--sans);color:var(--suave);margin-left:6px}
+.inf .tit{font-weight:500}
+.inf .cods{font-size:13px;color:var(--suave)}
+#inf-ver{background:var(--fundo);padding:20px 24px 40px;border-right:0}
+#inf-ver .folha{display:block;max-width:680px;width:100%;height:auto;background:#fff;border:1px solid var(--linha);border-radius:4px;margin-top:14px}
+.prods{display:flex;flex-wrap:wrap;gap:6px}
+.prods button{border:1px solid var(--linha);background:var(--painel);border-radius:4px;padding:6px 10px;cursor:pointer;text-align:left}
+.prods button:hover{border-color:var(--sinal)}
+.prods b{font:600 16px var(--cond);margin-right:6px}
+.prods small{color:var(--suave)}
+.inf-rel{display:flex;flex-wrap:wrap;gap:10px}
+.inf-rel a{display:flex;gap:10px;align-items:center;border:1px solid var(--linha);border-radius:4px;padding:6px 10px 6px 6px;color:inherit;text-decoration:none;cursor:pointer;max-width:320px}
+.inf-rel a:hover{border-color:var(--sinal)}
+.inf-rel img{width:44px;height:61px;object-fit:cover;object-position:top;background:#fff;border-radius:2px}
+.inf-rel b{font:600 15px var(--cond);display:block}
+.inf-rel span{font-size:13px}
+.link-img{font-size:14px;color:inherit;text-decoration:underline;text-decoration-color:var(--sinal);text-underline-offset:3px}
+
+@media (max-width:1100px){main{grid-template-columns:260px 1fr}#detalhe{grid-column:1/-1;border-top:1px solid var(--linha)}}
+@media (max-width:900px){body.modo-inf #informativos{display:block;overflow:auto}#informativos section{overflow:visible;border-right:0}}
+@media (max-width:700px){main{display:block;overflow:auto}section{border-right:0;overflow:visible}#arvore{max-height:40vh;overflow:auto}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<div id="abertura">
+  <div class="caixa">
+    <h2>Catálogo de peças</h2>
+    <p>Abra o arquivo <b>catalogo_sistema.db</b> para carregar os produtos e a árvore de classificação.</p>
+    <label for="arquivo">Abrir banco de dados</label>
+    <input type="file" id="arquivo" accept=".db,.sqlite">
+    <div class="solta">ou arraste o arquivo .db para cá</div>
+    <div class="erro" id="erro-abertura"></div>
+  </div>
+</div>
+
+<header>
+  <h1>Catálogo de peças</h1>
+  <span class="base" id="base"></span>
+  <button class="btn" id="btn-inf" aria-pressed="false" hidden>Informativos</button>
+  <div class="filtros">
+    <input id="busca" type="search" placeholder="Código, referência ou texto" aria-label="Buscar">
+    <select id="montadora" aria-label="Montadora"><option value="">Todas as montadoras</option></select>
+    <input id="modelo" type="search" placeholder="Modelo do veículo" aria-label="Modelo">
+    <button class="btn" id="limpar">Limpar filtros</button>
+    <button class="btn" id="cfg-fotos" title="Pasta onde estão as fotos dos produtos">Pasta das fotos</button>
+  </div>
+</header>
+
+<main>
+  <section id="arvore" aria-label="Árvore de sistemas"><div id="linhas" role="group" aria-label="Linha de veículo"></div><div id="nos"></div></section>
+  <section id="lista" aria-label="Produtos"></section>
+  <section id="detalhe" aria-label="Detalhe do produto"><p class="vazio-msg">Escolha um produto na lista para ver aplicações, referências cruzadas e fotos.</p></section>
+</main>
+
+<div id="informativos">
+  <section id="inf-lista" aria-label="Informativos técnicos">
+    <div class="inf-filtros">
+      <input id="inf-busca" type="search" placeholder="Título, número, código ou veículo" aria-label="Buscar informativo">
+      <select id="inf-cat" aria-label="Categoria"><option value="">Todas as categorias</option></select>
+      <select id="inf-ano" aria-label="Ano"><option value="">Todos os anos</option></select>
+      <select id="inf-mes" aria-label="Mês"><option value="">Todos os meses</option></select>
+    </div>
+    <div id="inf-itens"></div>
+  </section>
+  <section id="inf-ver" aria-label="Informativo"><p class="vazio-msg">Escolha um informativo na lista.</p></section>
+</div>
+
+<script src="lib/sql-wasm.js"></script>
+<script src="lib/sql-wasm-bin.js"></script>
+<script src="lib/catalogo_db.js?v=20260928b" onerror="void 0"></script>
+<script>
+"use strict";
+let db = null;
+let linhas = [], linhaPorId = new Map();
+let porId = new Map(), filhosDe = new Map();
+const estado = { linha: 1, no: null, busca: "", montadora: "", modelo: "", limite: 100, produto: null };
+let pastaFotos = "FotoProd/";
+try { pastaFotos = localStorage.getItem("pastaFotos") || pastaFotos; } catch (e) {}
+
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const pesq = s => String(s || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
+const semAcento = s => String(s || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase();
+
+function q(sql, params = []) {
+  const st = db.prepare(sql); st.bind(params);
+  const out = []; while (st.step()) out.push(st.getAsObject()); st.free(); return out;
+}
+
+/* ---------- Abertura do banco ---------- */
+async function iniciarSql() {
+  const bin = Uint8Array.from(atob(window.SQL_WASM_B64), c => c.charCodeAt(0));
+  return initSqlJs({ wasmBinary: bin });
+}
+const sqlPronto = iniciarSql();
+
+async function abrirBytes(buf) {
+  try {
+    const SQL = await sqlPronto;
+    db = new SQL.Database(new Uint8Array(buf));
+    let versao = "invalido";
+    try { q("SELECT 1 FROM arvore LIMIT 1"); versao = "antigo"; q("SELECT 1 FROM linha LIMIT 1"); versao = "ok"; } catch (e) {}
+    if (versao !== "ok") throw new Error(versao);
+    $("#abertura").remove();
+    montar();
+  } catch (e) {
+    db = null;
+    $("#abertura").querySelectorAll("label, .solta").forEach(el => el.hidden = false);
+    $("#abertura p").textContent = "Abra o arquivo catalogo_sistema.db para carregar os produtos e as árvores.";
+    $("#erro-abertura").textContent = e.message === "antigo"
+      ? "O banco carregado é de uma versão anterior (sem as árvores por linha). Atualize lib/catalogo_db.js e catalogo_sistema.db junto com este index.html."
+      : "Este arquivo não é o banco do catálogo (esperado: catalogo_sistema.db).";
+  }
+}
+$("#arquivo").addEventListener("change", e => { const f = e.target.files[0]; if (f) f.arrayBuffer().then(abrirBytes); });
+const ab = $("#abertura");
+ab.addEventListener("dragover", e => { e.preventDefault(); ab.classList.add("arrastando"); });
+ab.addEventListener("dragleave", () => ab.classList.remove("arrastando"));
+ab.addEventListener("drop", e => { e.preventDefault(); ab.classList.remove("arrastando"); const f = e.dataTransfer.files[0]; if (f) f.arrayBuffer().then(abrirBytes); });
+// abre automaticamente: 1) banco embutido em lib/catalogo_db.js  2) catalogo_sistema.db via http
+if (window.CATALOGO_DB_B64) {
+  ab.querySelector("p").textContent = "Carregando o catálogo…";
+  ab.querySelectorAll("label, .solta").forEach(el => el.hidden = true);
+  setTimeout(() => {
+    const bin = Uint8Array.from(atob(window.CATALOGO_DB_B64), c => c.charCodeAt(0));
+    window.CATALOGO_DB_B64 = null;
+    abrirBytes(bin.buffer);
+  }, 0);
+} else if (location.protocol.startsWith("http")) {
+  fetch("catalogo_sistema.db").then(r => r.ok ? r.arrayBuffer() : null).then(b => b && abrirBytes(b)).catch(() => {});
+}
+
+/* ---------- Montagem ---------- */
+function montar() {
+  const o = Object.fromEntries(q("SELECT chave, valor FROM origem").map(r => [r.chave, r.valor]));
+  $("#base").textContent = `Base Cofap v${o.versao} de ${o.data_emissao.split("-").reverse().join("/")}`;
+  linhas = q("SELECT id, nome FROM linha ORDER BY id");
+  linhas.forEach(l => linhaPorId.set(l.id, l));
+  for (const n of q("SELECT id, linha_id, pai_id, nivel, nome, caminho FROM arvore ORDER BY ordem")) {
+    porId.set(n.id, n);
+    const k = n.pai_id ?? "raiz" + n.linha_id;
+    if (!filhosDe.has(k)) filhosDe.set(k, []);
+    filhosDe.get(k).push(n);
+  }
+  $("#linhas").innerHTML = linhas.map(l => `<button class="aba" data-linha="${l.id}" aria-pressed="${l.id === estado.linha}">${esc(l.nome)} <small data-ql="${l.id}"></small></button>`).join("");
+  $("#linhas").addEventListener("click", e => { const b = e.target.closest(".aba"); if (b) trocarLinha(+b.dataset.linha); });
+  trocarLinha(estado.linha);
+  montarInformativos();
+}
+
+function trocarLinha(id, noInicial) {
+  estado.linha = id; estado.no = noInicial ?? null;
+  document.querySelectorAll(".aba").forEach(b => b.setAttribute("aria-pressed", +b.dataset.linha === id));
+  // montadoras com veículos nesta linha
+  const atual = estado.montadora;
+  const ms = q("SELECT DISTINCT f.id, f.nome FROM fabricante f JOIN aplicacao a ON a.montadora_id = f.id WHERE a.linha_id = ? ORDER BY f.nome", [id]);
+  $("#montadora").innerHTML = `<option value="">Todas as montadoras</option>` + ms.map(r => `<option value="${r.id}">${esc(r.nome)}</option>`).join("");
+  estado.montadora = ms.some(m => String(m.id) === atual) ? atual : "";
+  $("#montadora").value = estado.montadora;
+  desenharArvore();
+  if (noInicial) selecionarNo(noInicial, true); else atualizar();
+}
+
+function folhas(id) {
+  const f = filhosDe.get(id); if (!f) return [id];
+  return f.flatMap(c => folhas(c.id));
+}
+
+/* ---------- Filtros → SQL ---------- */
+function clausulaFiltros(linha = estado.linha, comVeiculo = true) {
+  const w = ["p.id IN (SELECT produto_id FROM produto_linha WHERE linha_id = ?)"], p = [linha];
+  if (estado.busca) {
+    const cod = pesq(estado.busca);
+    const palavras = semAcento(estado.busca).split(/\s+/).filter(Boolean);
+    const partes = [];
+    if (cod.length >= 2) {
+      partes.push("p.codigo_pesq LIKE ?", "p.id IN (SELECT produto_id FROM referencia_cruzada WHERE codigo_pesq LIKE ?)");
+      p.push(cod + "%", cod + "%");
+    }
+    if (palavras.length) { partes.push("(" + palavras.map(() => "p.texto_busca LIKE ?").join(" AND ") + ")"); p.push(...palavras.map(x => "%" + x + "%")); }
+    if (partes.length) w.push("(" + partes.join(" OR ") + ")");
+  }
+  if (comVeiculo && (estado.montadora || estado.modelo)) {
+    const s = ["a.linha_id = ?"]; p.push(linha);
+    if (estado.montadora) { s.push("a.montadora_id = ?"); p.push(+estado.montadora); }
+    if (estado.modelo) { s.push("a.modelo LIKE ?"); p.push("%" + estado.modelo + "%"); }
+    w.push(`p.id IN (SELECT pa.produto_id FROM produto_aplicacao pa JOIN aplicacao a ON a.id = pa.aplicacao_id WHERE ${s.join(" AND ")})`);
+  }
+  return { w, p };
+}
+const SEM_CLASSIF = "p.id NOT IN (SELECT pa.produto_id FROM produto_arvore pa JOIN arvore a ON a.id = pa.arvore_id WHERE a.linha_id = ?)";
+
+function atualizar() {
+  estado.limite = 100;
+  contarLinhas();
+  contarArvore();
+  desenharLista();
+}
+
+function contarLinhas() {
+  for (const l of linhas) {
+    const { w, p } = clausulaFiltros(l.id, l.id === estado.linha);
+    const n = q(`SELECT COUNT(*) c FROM produto p WHERE ${w.join(" AND ")}`, p)[0].c;
+    const el = document.querySelector(`[data-ql="${l.id}"]`);
+    el.textContent = n.toLocaleString("pt-BR");
+    el.parentElement.classList.toggle("vazia", !n);
+  }
+}
+
+/* ---------- Árvore ---------- */
+function desenharArvore() {
+  const html = [];
+  const rec = (k) => {
+    for (const n of filhosDe.get(k) || []) {
+      const temFilhos = filhosDe.has(n.id);
+      html.push(`<div class="n${n.nivel}"><button class="no" data-id="${n.id}" aria-expanded="false"><span class="seta">${temFilhos ? "▶" : ""}</span><span class="nome">${esc(n.nome)}</span><span class="qtd" data-q="${n.id}"></span></button>`);
+      if (temFilhos) { html.push('<div class="filhos">'); rec(n.id); html.push("</div>"); }
+      html.push("</div>");
+    }
+  };
+  html.push(`<div class="n1"><button class="no ativo" data-id="todos"><span class="seta"></span><span class="nome">Todos os produtos</span><span class="qtd" data-q="todos"></span></button></div>`);
+  rec("raiz" + estado.linha);
+  html.push(`<div class="sep"></div><div class="n1"><button class="no" data-id="sem"><span class="seta"></span><span class="nome">Sem classificação</span><span class="qtd" data-q="sem"></span></button></div>`);
+  $("#nos").innerHTML = html.join("");
+}
+$("#nos").addEventListener("click", e => {
+  const b = e.target.closest(".no"); if (!b) return;
+  const id = b.dataset.id;
+  const temFilhos = b.nextElementSibling && b.nextElementSibling.classList.contains("filhos");
+  if (temFilhos) { b.classList.toggle("aberto"); b.setAttribute("aria-expanded", b.classList.contains("aberto")); }
+  selecionarNo(id === "todos" ? null : id === "sem" ? "sem" : +id);
+});
+
+function selecionarNo(id, abrir) {
+  estado.no = id;
+  document.querySelectorAll(".no.ativo").forEach(x => x.classList.remove("ativo"));
+  const b = document.querySelector(`.no[data-id="${id ?? "todos"}"]`);
+  if (b) {
+    b.classList.add("ativo");
+    if (abrir) { let el = b.parentElement; while (el && el.id !== "nos") { if (el.classList.contains("filhos")) el.previousElementSibling.classList.add("aberto"); el = el.parentElement; } b.scrollIntoView({ block: "nearest" }); }
+  }
+  estado.limite = 100; contarArvore(); desenharLista();
+}
+
+function contarArvore() {
+  const { w, p } = clausulaFiltros();
+  const where = w.join(" AND ");
+  const pares = q(`SELECT pa.arvore_id AS a, pa.produto_id AS p FROM produto_arvore pa JOIN arvore ar ON ar.id = pa.arvore_id
+                   JOIN produto p ON p.id = pa.produto_id WHERE ar.linha_id = ? AND ${where}`, [estado.linha, ...p]);
+  const conj = new Map();
+  const add = (id, pid) => { if (!conj.has(id)) conj.set(id, new Set()); conj.get(id).add(pid); };
+  for (const { a, p: pid } of pares) { let n = porId.get(a); while (n) { add(n.id, pid); n = porId.get(n.pai_id); } }
+  document.querySelectorAll("[data-q]").forEach(el => {
+    const k = el.dataset.q; let v;
+    if (k === "todos") v = q(`SELECT COUNT(*) c FROM produto p WHERE ${where}`, p)[0].c;
+    else if (k === "sem") v = q(`SELECT COUNT(*) c FROM produto p WHERE ${where} AND ${SEM_CLASSIF}`, [...p, estado.linha])[0].c;
+    else v = conj.get(+k)?.size || 0;
+    el.textContent = v || "";
+    el.closest(".no").classList.toggle("vazio", !v);
+  });
+}
+
+/* ---------- Lista ---------- */
+function desenharLista() {
+  const { w, p } = clausulaFiltros();
+  if (estado.no === "sem") { w.push(SEM_CLASSIF); p.push(estado.linha); }
+  else if (estado.no != null) w.push(`p.id IN (SELECT produto_id FROM produto_arvore WHERE arvore_id IN (${folhas(estado.no).join(",")}))`);
+  const where = "WHERE " + w.join(" AND ");
+  const total = q(`SELECT COUNT(*) c FROM produto p ${where}`, p)[0].c;
+  const rows = q(`SELECT p.id, p.codigo, p.descricao, p.posicao, p.linha_cofap FROM produto p ${where} ORDER BY p.descricao, p.codigo LIMIT ${estado.limite}`, p);
+  const nomeLinha = linhaPorId.get(estado.linha).nome;
+  const titulo = estado.no === "sem" ? `${nomeLinha} > Sem classificação` : estado.no ? `${nomeLinha} > ${porId.get(estado.no).caminho}` : nomeLinha;
+  let html = `<div class="topo-lista"><strong>${total.toLocaleString("pt-BR")}</strong> produto${total === 1 ? "" : "s"} em ${esc(titulo)}</div>`;
+  if (!rows.length) {
+    const outras = linhas.filter(l => l.id !== estado.linha).map(l => {
+      const f = clausulaFiltros(l.id, false); return [l, q(`SELECT COUNT(*) c FROM produto p WHERE ${f.w.join(" AND ")}`, f.p)[0].c];
+    }).filter(x => x[1]);
+    const semProdutosNaLinha = !q("SELECT 1 FROM produto_linha WHERE linha_id = ? LIMIT 1", [estado.linha]).length;
+    html += semProdutosNaLinha
+      ? `<p class="vazio-msg">Nenhum produto do catálogo Cofap tem aplicação na linha ${esc(nomeLinha)}. A árvore está carregada e passa a ser usada quando houver produtos.</p>`
+      : `<p class="vazio-msg">Nenhum produto com esses filtros nesta linha.${outras.length && estado.busca ? " A busca encontra resultados em: " + outras.map(([l, n]) => `<a href="#" data-ir="${l.id}">${esc(l.nome)} (${n})</a>`).join(", ") + "." : " Tente outro modelo, outra montadora ou limpe a busca."}</p>`;
+  }
+  for (const r of rows)
+    html += `<button class="item${r.id === estado.produto ? " ativo" : ""}" data-id="${r.id}"><span class="cod">${esc(r.codigo)}</span><span class="desc">${esc(r.descricao)}${r.linha_cofap ? " " + esc(r.linha_cofap) : ""}</span><span class="pos">${esc(r.posicao || "")}</span></button>`;
+  if (total > rows.length) html += `<button class="mais" id="mais">Mostrar mais ${Math.min(100, total - rows.length)}</button>`;
+  $("#lista").innerHTML = html;
+  $("#mais")?.addEventListener("click", () => { estado.limite += 100; const y = $("#lista").scrollTop; desenharLista(); $("#lista").scrollTop = y; });
+}
+$("#lista").addEventListener("click", e => {
+  const ir = e.target.closest("[data-ir]"); if (ir) { e.preventDefault(); trocarLinha(+ir.dataset.ir); return; }
+  const b = e.target.closest(".item"); if (!b) return;
+  mostrarProduto(+b.dataset.id);
+  document.querySelectorAll(".item.ativo").forEach(x => x.classList.remove("ativo")); b.classList.add("ativo");
+});
+
+/* ---------- Fotos ---------- */
+// Em site publicado (http/https) um caminho file:/// salvo antes não funciona: usa a pasta ao lado da página.
+function pastaEfetiva() {
+  return location.protocol.startsWith("http") && /^file:/i.test(pastaFotos) ? "FotoProd/" : pastaFotos;
+}
+// Servidores Linux (GitHub Pages) diferenciam maiúsculas: tenta minúsculas, original e maiúsculas.
+function carregarFoto(img) {
+  const f = img.dataset.foto, base = pastaEfetiva();
+  const ponto = f.lastIndexOf(".");
+  const nome = ponto > 0 ? f.slice(0, ponto) : f, ext = ponto > 0 ? f.slice(ponto) : "";
+  const tentativas = [...new Set([f.toLowerCase(), f, nome + ext.toLowerCase(), nome + ext.toUpperCase(), f.toUpperCase()])]
+    .map(n => base + encodeURIComponent(n));
+  let i = 0;
+  img.onerror = () => {
+    if (++i < tentativas.length) { img.src = tentativas[i]; return; }
+    const aviso = document.createElement("span");
+    aviso.className = "sem-foto";
+    aviso.textContent = `Foto não encontrada: ${new URL(tentativas[0], location.href).href}`;
+    img.replaceWith(aviso);
+  };
+  img.src = tentativas[0];
+}
+
+/* ---------- Detalhe ---------- */
+function mostrarProduto(id) {
+  estado.produto = id;
+  const p = q("SELECT * FROM produto WHERE id = ?", [id])[0];
+  const cam = q(`SELECT a.id, a.caminho, l.id AS lid, l.nome AS linha FROM produto_arvore pa JOIN arvore a ON a.id = pa.arvore_id
+                 JOIN linha l ON l.id = a.linha_id WHERE pa.produto_id = ? ORDER BY l.id, a.ordem`, [id]);
+  const lins = q(`SELECT l.nome FROM produto_linha pl JOIN linha l ON l.id = pl.linha_id WHERE pl.produto_id = ? ORDER BY l.id`, [id]).map(r => r.nome);
+  const apl = q(`SELECT l.nome linha, f.nome montadora, a.modelo, a.complemento, a.anos, a.complemento3, a.complemento4 FROM produto_aplicacao pa
+                 JOIN aplicacao a ON a.id = pa.aplicacao_id LEFT JOIN fabricante f ON f.id = a.montadora_id
+                 JOIN linha l ON l.id = a.linha_id
+                 WHERE pa.produto_id = ? ORDER BY l.id, f.nome, a.modelo, a.anos`, [id]);
+  const refs = q(`SELECT f.nome marca, r.codigo FROM referencia_cruzada r LEFT JOIN fabricante f ON f.id = r.marca_id
+                  WHERE r.produto_id = ? ORDER BY f.nome, r.codigo`, [id]);
+  const fotos = [p.foto, p.foto2, p.foto3].filter(Boolean);
+  let h = `<div class="etiqueta">${esc(p.codigo)}</div>
+    <h2>${esc(p.descricao)}${p.linha_cofap ? " " + esc(p.linha_cofap) : ""}</h2>
+    <p class="meta">${esc(p.posicao || "Posição não informada")} · Grupo Cofap: ${esc(p.grupo_cofap || "—")}${p.unidade ? " · Unidade: " + esc(p.unidade) : ""} · Linha: ${esc(lins.join(", "))}</p>
+    <div class="fotos">${fotos.map(f => `<img alt="Foto ${esc(p.codigo)}" data-foto="${esc(f)}">`).join("") || '<span class="sem-foto">Produto sem foto cadastrada</span>'}</div>
+    <h3>Na árvore</h3>
+    <ul class="caminhos">${cam.length ? cam.map(c => `<li><span class="lin">${esc(c.linha)}</span><a data-no="${c.id}" data-lin="${c.lid}">${esc(c.caminho)}</a></li>`).join("") : "<li>Sem classificação nas árvores</li>"}</ul>`;
+  if (p.observacao) h += `<h3>Observação</h3><div class="obs">${esc(p.observacao)}</div>`;
+  if (temInf) {
+    const infs = q(`SELECT i.id, i.numero, i.data, i.titulo, i.imagem FROM informativo_produto x JOIN informativo i ON i.id = x.informativo_id
+                    WHERE x.produto_id = ? ORDER BY i.data DESC, i.ordem DESC`, [id]);
+    if (infs.length) h += `<h3>Informativos técnicos (${infs.length})</h3><div class="inf-rel">${infs.map(i =>
+      `<a data-inf="${i.id}" href="#">${miniatura(i, 44)}<span><b>${esc(i.numero)} · ${dataCurta(i.data)}</b>${esc(i.titulo)}</span></a>`).join("")}</div>`;
+  }
+  h += `<h3>Aplicações (${apl.length})</h3>`;
+  h += apl.length ? `<div class="tabela"><table><thead><tr><th>Linha</th><th>Montadora</th><th>Modelo</th><th>Complemento</th><th>Anos</th></tr></thead><tbody>${apl.map(a => `<tr><td>${esc(a.linha)}</td><td>${esc(a.montadora)}</td><td>${esc(a.modelo)}</td><td>${esc([a.complemento, a.complemento3, a.complemento4].filter(Boolean).join(" · "))}</td><td>${esc(a.anos)}</td></tr>`).join("")}</tbody></table></div>` : "<p>Sem aplicações cadastradas.</p>";
+  h += `<h3>Referências cruzadas (${refs.length})</h3>`;
+  h += refs.length ? `<div class="refs">${refs.map(r => `<span class="ref"><b>${esc(r.marca)}</b> ${esc(r.codigo)}</span>`).join("")}</div>` : "<p>Sem referências cruzadas.</p>";
+  $("#detalhe").innerHTML = h;
+  $("#detalhe").scrollTop = 0;
+  document.querySelectorAll("#detalhe img[data-foto]").forEach(carregarFoto);
+}
+$("#detalhe").addEventListener("click", e => {
+  const inf = e.target.closest("[data-inf]"); if (inf) { e.preventDefault(); modoInformativos(true, +inf.dataset.inf); return; }
+  const a = e.target.closest("[data-no]"); if (!a) return;
+  const lin = +a.dataset.lin;
+  if (lin !== estado.linha) trocarLinha(lin, +a.dataset.no); else selecionarNo(+a.dataset.no, true);
+});
+
+/* ---------- Eventos de filtro ---------- */
+let t;
+const aoDigitar = (campo) => e => { clearTimeout(t); t = setTimeout(() => { estado[campo] = e.target.value.trim(); atualizar(); }, 250); };
+$("#busca").addEventListener("input", aoDigitar("busca"));
+$("#modelo").addEventListener("input", aoDigitar("modelo"));
+$("#montadora").addEventListener("change", e => { estado.montadora = e.target.value; atualizar(); });
+$("#limpar").addEventListener("click", () => {
+  $("#busca").value = $("#modelo").value = $("#montadora").value = "";
+  Object.assign(estado, { busca: "", modelo: "", montadora: "" });
+  atualizar();
+});
+$("#cfg-fotos").addEventListener("click", () => {
+  const v = prompt("Pasta das fotos (relativa a este arquivo ou caminho completo, ex.: file:///C:/ProgramData/CatalogoProdutosCofap/FotoProd/)", pastaFotos);
+  if (v == null) return;
+  pastaFotos = v.endsWith("/") ? v : v + "/";
+  try { localStorage.setItem("pastaFotos", pastaFotos); } catch (e) {}
+  if (estado.produto) mostrarProduto(estado.produto);
+});
+
+/* ---------- Informativos técnicos ---------- */
+let temInf = false;
+const infEstado = { busca: "", cat: "", ano: "", mes: "", sel: null };
+const MESES = ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"];
+const dataCurta = d => d ? `${MESES[+d.slice(5, 7) - 1]}/${d.slice(0, 4)}` : "";
+const dataLonga = d => d ? d.split("-").reverse().join("/") : "";
+// miniatura em Informativos/mini/; se não existir, usa a imagem inteira
+function miniatura(i, w) {
+  if (!i.imagem) return "";
+  const mini = i.imagem.replace(/^Informativos\/(\d+)\.\w+$/, "Informativos/mini/$1.jpg");
+  return `<img loading="lazy" alt="" width="${w}" src="${esc(mini)}" onerror="this.onerror=null;this.src='${esc(i.imagem)}'">`;
+}
+
+function montarInformativos() {
+  try { temInf = q("SELECT COUNT(*) c FROM informativo")[0].c > 0; } catch (e) { temInf = false; }
+  if (!temInf) return;
+  $("#btn-inf").hidden = false;
+  $("#inf-cat").innerHTML += q("SELECT categoria, COUNT(*) n FROM informativo GROUP BY categoria ORDER BY categoria")
+    .map(r => `<option value="${esc(r.categoria)}">${esc(r.categoria)} (${r.n})</option>`).join("");
+  $("#inf-ano").innerHTML += q("SELECT DISTINCT substr(data, 1, 4) a FROM informativo WHERE data <> '' ORDER BY a DESC")
+    .map(r => `<option>${r.a}</option>`).join("");
+  $("#inf-mes").innerHTML += MESES.map((m, i) => `<option value="${String(i + 1).padStart(2, "0")}">${m}</option>`).join("");
+}
+
+function modoInformativos(ligar, id) {
+  document.body.classList.toggle("modo-inf", ligar);
+  $("#btn-inf").setAttribute("aria-pressed", ligar);
+  $("#btn-inf").textContent = ligar ? "Voltar ao catálogo" : "Informativos";
+  if (!ligar) return;
+  if (id) {  // vindo do produto: limpa filtros para o informativo aparecer na lista
+    Object.assign(infEstado, { busca: "", cat: "", ano: "", mes: "" });
+    ["#inf-busca", "#inf-cat", "#inf-ano", "#inf-mes"].forEach(s => $(s).value = "");
+    infEstado.sel = id;
+  }
+  desenharInformativos();
+  if (infEstado.sel) mostrarInformativo(infEstado.sel);
+  document.querySelector(`.inf[data-inf="${infEstado.sel}"]`)?.scrollIntoView({ block: "nearest" });
+}
+$("#btn-inf").addEventListener("click", () => modoInformativos(!document.body.classList.contains("modo-inf")));
+
+function desenharInformativos() {
+  const w = [], p = [];
+  if (infEstado.busca) {
+    const palavras = semAcento(infEstado.busca).split(/\s+/).filter(Boolean);
+    const cod = pesq(infEstado.busca);
+    const partes = [];
+    if (palavras.length) { partes.push("(" + palavras.map(() => "i.texto_busca LIKE ?").join(" AND ") + ")"); p.push(...palavras.map(x => "%" + x + "%")); }
+    if (cod.length >= 3) {
+      partes.push(`i.id IN (SELECT x.informativo_id FROM informativo_produto x JOIN produto pr ON pr.id = x.produto_id
+                   WHERE pr.codigo_pesq LIKE ? OR pr.id IN (SELECT produto_id FROM referencia_cruzada WHERE codigo_pesq LIKE ?))`);
+      p.push(cod + "%", cod + "%");
+    }
+    w.push("(" + partes.join(" OR ") + ")");
+  }
+  if (infEstado.cat) { w.push("i.categoria = ?"); p.push(infEstado.cat); }
+  if (infEstado.ano) { w.push("substr(i.data, 1, 4) = ?"); p.push(infEstado.ano); }
+  if (infEstado.mes) { w.push("substr(i.data, 6, 2) = ?"); p.push(infEstado.mes); }
+  const rows = q(`SELECT i.id, i.numero, i.data, i.titulo, i.imagem,
+                    (SELECT group_concat(pr.codigo, ", ") FROM informativo_produto x JOIN produto pr ON pr.id = x.produto_id WHERE x.informativo_id = i.id) codigos
+                  FROM informativo i ${w.length ? "WHERE " + w.join(" AND ") : ""} ORDER BY i.data DESC, i.ordem DESC`, p);
+  let html = `<div class="inf-total"><strong>${rows.length}</strong> informativo${rows.length === 1 ? "" : "s"}</div>`;
+  if (!rows.length) html += `<p class="vazio-msg">Nenhum informativo com esses filtros.</p>`;
+  for (const r of rows)
+    html += `<button class="inf${r.id === infEstado.sel ? " ativo" : ""}" data-inf="${r.id}">${miniatura(r, 56)}<span class="num">${esc(r.numero)}<span>${dataCurta(r.data)}</span></span><span class="tit">${esc(r.titulo)}</span><span class="cods">${esc(r.codigos || "")}</span></button>`;
+  $("#inf-itens").innerHTML = html;
+}
+$("#inf-itens").addEventListener("click", e => {
+  const b = e.target.closest(".inf"); if (!b) return;
+  document.querySelectorAll(".inf.ativo").forEach(x => x.classList.remove("ativo")); b.classList.add("ativo");
+  mostrarInformativo(+b.dataset.inf);
+});
+
+function mostrarInformativo(id) {
+  infEstado.sel = id;
+  const i = q("SELECT * FROM informativo WHERE id = ?", [id])[0];
+  if (!i) return;
+  const prods = q(`SELECT pr.id, pr.codigo, pr.descricao, pr.posicao FROM informativo_produto x JOIN produto pr ON pr.id = x.produto_id
+                   WHERE x.informativo_id = ? ORDER BY pr.codigo`, [id]);
+  let h = `<div class="etiqueta">${esc(i.numero)}</div>
+    <h2>${esc(i.titulo)}</h2>
+    <p class="meta">${dataLonga(i.data)} · ${esc(i.categoria)}${i.imagem ? ` · <a class="link-img" href="${esc(i.imagem)}" target="_blank" rel="noopener">Abrir imagem</a>` : ""}</p>
+    <h3>Produtos no informativo (${prods.length})</h3>`;
+  h += prods.length ? `<div class="prods">${prods.map(r => `<button data-prod="${r.id}"><b>${esc(r.codigo)}</b>${esc(r.descricao)} <small>${esc(r.posicao || "")}</small></button>`).join("")}</div>`
+    : "<p>Nenhum produto do catálogo foi identificado neste informativo.</p>";
+  h += i.imagem ? `<img class="folha" alt="Informativo ${esc(i.numero)}: ${esc(i.titulo)}" src="${esc(i.imagem)}">` : `<p class="sem-foto">Imagem não disponível.</p>`;
+  $("#inf-ver").innerHTML = h;
+  $("#inf-ver").scrollTop = 0;
+}
+$("#inf-ver").addEventListener("click", e => {
+  const b = e.target.closest("[data-prod]"); if (!b) return;
+  irParaProduto(+b.dataset.prod);
+});
+
+function irParaProduto(id) {
+  modoInformativos(false);
+  const lins = q("SELECT linha_id FROM produto_linha WHERE produto_id = ? ORDER BY linha_id", [id]).map(r => r.linha_id);
+  if (lins.length && !lins.includes(estado.linha)) trocarLinha(lins[0]);
+  mostrarProduto(id);
+  document.querySelectorAll(".item.ativo").forEach(x => x.classList.remove("ativo"));
+  document.querySelector(`.item[data-id="${id}"]`)?.classList.add("ativo");
+}
+
+let tInf;
+$("#inf-busca").addEventListener("input", e => { clearTimeout(tInf); tInf = setTimeout(() => { infEstado.busca = e.target.value.trim(); desenharInformativos(); }, 250); });
+for (const [sel, k] of [["#inf-cat", "cat"], ["#inf-ano", "ano"], ["#inf-mes", "mes"]])
+  $(sel).addEventListener("change", e => { infEstado[k] = e.target.value; desenharInformativos(); });
+</script>
+</body>
+</html>

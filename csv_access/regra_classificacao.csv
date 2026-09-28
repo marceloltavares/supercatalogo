@@ -1,0 +1,44 @@
+﻿id;descricao_regex;posicao_regex;destinos;observacao
+1;AMORTECEDOR;ESTICADOR;Correias e Polias > Polias e Tensionadores;Amortecedor do tensionador
+2;AMORTECEDOR;CAPÔ;Lataria > Capô;
+3;AMORTECEDOR;TAMPA TRASEIRA|CAÇAMBA;Lataria > Tampa Traseira/Porta-malas;
+4;AMORTECEDOR;BANCO;Acabamentos Internos > Bancos (e Componentes);
+5;AMORTECEDOR;^DIANT.*TRAS;Suspensão Dianteira > Amortecedores Dianteiros | Suspensão Traseira > Amortecedores Traseiros;Serve nas duas posições
+6;AMORTECEDOR;^DIANT;Suspensão Dianteira > Amortecedores Dianteiros;
+7;AMORTECEDOR;^TRAS;Suspensão Traseira > Amortecedores Traseiros;
+8;MOLA A GÁS;CAPÔ|TAMPA DO MOTOR|TAMPA DIANTEIRA;Lataria > Capô;
+9;MOLA A GÁS;PORTA MALAS|TAMPA TRASEIRA|PORTA TRASEIRA|BAGAGEIRO|VIDRO DA TAMPA;Lataria > Tampa Traseira/Porta-malas;
+10;MOLA A GÁS;GRADE;Para-choques e Grades > Grade Frontal;
+11;MOLA A GÁS;BANCO|CAMA;Acabamentos Internos > Bancos (e Componentes);
+12;BANDEJA;DIANT;Suspensão Dianteira > Bandejas/Braços de Suspensão;
+13;BANDEJA;TRAS;Suspensão Traseira > Braços de Suspensão Traseira (Multilink, etc.);
+14;BARRA DE DIREÇÃO|BRAÇO P.*MAN;;Sistema de Direção > Barras Axiais/Braços de Direção;
+15;BIELETA.*;^DIANT.*TRAS;Suspensão Dianteira > Bieletas Dianteiras | Suspensão Traseira > Bieletas Traseiras;
+16;BIELETA.*;DIANT;Suspensão Dianteira > Bieletas Dianteiras;
+17;BIELETA.*;TRAS;Suspensão Traseira > Bieletas Traseiras;
+18;KIT BARRA ESTABILIZADORA;DIANT;Suspensão Dianteira > Barra Estabilizadora Dianteira;
+19;KIT BARRA ESTABILIZADORA;TRAS;Suspensão Traseira > Barra Estabilizadora Traseira;
+20;BARRA DE TORÇÃO;;Suspensão Traseira > Eixo de Torção/Eixo Rígido;
+21;BUCHA;MOTOR;Coxins e Suportes do Motor > Coxins do Motor;
+22;BUCHA;DIREÇÃO;Sistema de Direção > Caixa de Direção (Mecânica, Hidráulica, Elétrica);
+23;BUCHA;^DIANT.*TRAS;Suspensão Dianteira > Buchas (Bandeja, Barra Estabilizadora) | Suspensão Traseira > Buchas Traseiras;
+24;BUCHA;DIANT;Suspensão Dianteira > Buchas (Bandeja, Barra Estabilizadora);
+25;BUCHA;TRAS;Suspensão Traseira > Buchas Traseiras;
+26;SUPORTE;MOTOR;Coxins e Suportes do Motor > Coxins do Motor;
+27;SUPORTE;CÂMBIO;Coxins e Suportes da Transmissão > Coxins do Câmbio;
+28;SUPORTE;DIANT;Suspensão Dianteira > Coxins e Batentes do Amortecedor;Suporte/coxim do amortecedor
+29;SUPORTE;TRAS;Suspensão Traseira > Buchas Traseiras;Árvore não tem nó de coxim traseiro
+30;RESTRITOR DE TORQUE;;Coxins e Suportes do Motor > Coxins do Motor;
+31;BATENTE|ISOLADOR|CALÇO|APOIO DE MOLA;;Suspensão Dianteira > Coxins e Batentes do Amortecedor;
+32;(TOP )?KIT SUSPENSÃO;DIANT;Suspensão Dianteira > Coxins e Batentes do Amortecedor;
+33;(TOP )?KIT SUSPENSÃO;TRAS;Suspensão Traseira > Amortecedores Traseiros;"Kit batente/coifa traseiro; árvore não tem nó próprio"
+34;MOLA HELICOIDAL;DIANT;Suspensão Dianteira > Molas Helicoidais Dianteiras;
+35;MOLA HELICOIDAL;TRAS;Suspensão Traseira > Molas Traseiras (Helicoidais, Feixe de Molas);
+36;FEIXE DE MOLA;TRAS;Suspensão Traseira > Molas Traseiras (Helicoidais, Feixe de Molas);
+37;CUBO DE RODA;;Rodas e Pneus > Cubos de Roda;
+38;PASTILHA PARA FREIO;;Freio a Disco > Pastilhas de Freio;
+39;PIVÔ DE SUSPENSÃO;;Suspensão Dianteira > Pivôs de Suspensão;
+40;TERMINAL AXIAL;;Sistema de Direção > Barras Axiais/Braços de Direção;
+41;TERMINAL DE DIREÇÃO;;Sistema de Direção > Terminais de Direção;
+42;SEMIEIXO;;Eixos de Transmissão e Homocinéticas > Semieixos;
+43;JUNTA HOMOCINÉTICA.*|KIT (DE )?REPARO.*|TRIZETA|TULIPA;;Eixos de Transmissão e Homocinéticas > Juntas Homocinéticas (Fixa, Deslizante);
