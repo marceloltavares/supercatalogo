@@ -1,25 +1,24 @@
 """
-Inclui os INFORMATIVOS TÉCNICOS da Cofap no catalogo_sistema.db.
+Inclui os INFORMATIVOS TÉCNICOS de todas as bases (Cofap, Linha Pesada, Magneti Marelli,
+Motocicletas) no catalogo_sistema.db.
 
 Uso (rodar DEPOIS do gerar_banco.py, a partir da pasta catalogo):
-  python scripts/informativos.py CatalogoExpresso.c01 pasta_Informativos catalogo_sistema.db
-
-  pasta_Informativos = C:\\ProgramData\\CatalogoProdutosCofap\\Informativos
+  python scripts\informativos.py
+  python scripts\informativos.py --origem C:\ProgramData --saida catalogo_sistema.db
 
 O que faz:
-  1. Lê a tabela INFORMATIVO do .c01 (mesma decifragem do gerar_banco.py).
-  2. Converte os .img para Informativos/<codigo>.jpg ao lado do index.html.
-     Os .img são JPEG comuns (sem cifra); o script confere a assinatura de cada um.
-  3. Lê o texto de cada imagem por OCR (Tesseract) e guarda em
-     scripts/informativos_ocr.json. Só roda OCR para informativos que ainda não
-     estão no cache — sem Tesseract instalado, usa o cache e avisa dos novos.
-  4. Liga informativo -> produto pelos códigos Cofap que aparecem na imagem
-     (comparados com produto.codigo_pesq). Código só com números (ex.: 45913)
-     só vale se o tipo de peça do título bater com a descrição do produto.
-  5. Grava as tabelas informativo e informativo_produto, regrava
-     lib/catalogo_db.js e troca o ?v= no index.html.
+  1. Lê a tabela INFORMATIVO do .c01 de cada base usada no banco (lista BASES do gerar_banco.py).
+  2. Converte os .img para Informativos/<codigo>.jpg ao lado do index.html (+ miniatura em
+     Informativos/mini/). Os .img são JPEG comuns (sem cifra). Informativos da Cofap mantêm o
+     código original; os das outras bases somam o offset da base (ex.: 1000412).
+  3. Lê o texto de cada imagem por OCR (Tesseract) e guarda em scripts/informativos_ocr.json.
+     Só roda OCR para o que ainda não está no cache — sem Tesseract, usa o cache e avisa.
+  4. Liga informativo -> produto pelos códigos que aparecem na imagem (produto.codigo_pesq).
+     Código só com números só vale se o tipo de peça do título bater com o produto.
+  5. Grava as tabelas informativo e informativo_produto, regrava lib/catalogo_db.js e troca
+     o ?v= no index.html.
 
-Requisitos: Python 3.9+, numpy, Pillow (opcional, melhora o OCR) e
+Requisitos: Python 3.9+, numpy, Pillow (opcional, melhora o OCR e gera miniaturas) e
 Tesseract OCR (opcional, só para informativos novos).
 """
 import base64
@@ -35,6 +34,8 @@ import sys
 import tempfile
 import unicodedata
 from collections import Counter
+
+import argparse
 
 import numpy as np
 
@@ -127,7 +128,7 @@ def ocr(tess, caminho):
     return "\n".join(textos)
 
 
-TOKEN = re.compile(r"\b[A-Z0-9]{1,5}[.\-]?\s?[A-Z0-9]{3,8}\b")
+TOKEN = re.compile(r"\b[A-Z0-9]{3,12}(?:[.\-][A-Z0-9]{1,8}){1,2}\b|\b[A-Z0-9]{1,5}[.\-]?\s?[A-Z0-9]{3,8}\b")
 TROCA = str.maketrans("OIlSZB", "011528")
 
 
@@ -143,12 +144,15 @@ def candidatos(tok):
     return list(dict.fromkeys(out))
 
 
-def tipo_confere(titulo, descricao):
-    t, d = sem_acento(titulo), sem_acento(descricao)
+def tipo_confere(titulo, descricao, grupo=""):
+    t, d = sem_acento(titulo), sem_acento(f"{descricao} {grupo}")
     for chave, rx in TIPOS:
-        if chave in t:
+        if chave in t.split(" - ")[0]:
             return bool(re.search(rx, d))
-    return False
+    # categorias sem regra fixa (ex.: Magneti Marelli): alguma palavra do título no produto
+    cat = t.split(" - ")[0]
+    radicais = {w[:5] for w in re.findall(r"[A-Z]{4,}", cat)}
+    return any(r in d for r in radicais)
 
 
 # --------------------------------------------------------------------------
@@ -158,7 +162,8 @@ DROP TABLE IF EXISTS informativo_produto;
 DROP TABLE IF EXISTS informativo;
 CREATE TABLE informativo(id INTEGER PRIMARY KEY, numero TEXT, data TEXT, titulo TEXT, ordem INTEGER,
                          tipo_arquivo TEXT, arquivo_origem TEXT, categoria_cofap TEXT,
-                         categoria TEXT, montadoras TEXT, imagem TEXT, texto_ocr TEXT, texto_busca TEXT);
+                         categoria TEXT, montadoras TEXT, imagem TEXT, texto_ocr TEXT, texto_busca TEXT,
+                         marca TEXT, base TEXT);
 CREATE TABLE informativo_produto(informativo_id INTEGER REFERENCES informativo(id),
                                  produto_id INTEGER REFERENCES produto(id),
                                  codigo_lido TEXT, confere_tipo INTEGER, origem TEXT,
@@ -169,23 +174,35 @@ CREATE VIEW v_informativo_sem_produto AS
 """
 
 
-def main(c01, pasta_img, saida):
-    # 1. origem
+def main(origem, saida):
+    # 1. origem: bases que estão no banco (chaves base_<id> gravadas pelo gerar_banco.py)
+    sys.path.insert(0, AQUI)
+    from gerar_banco import BASES
+    con = sqlite3.connect(f"file:{saida}?mode=ro", uri=True)
+    no_banco = {k[5:] for (k,) in con.execute("SELECT chave FROM origem WHERE chave LIKE 'base\\_%' ESCAPE '\\'")} or {"cofap"}
+    con.close()
+    infs = []
     with tempfile.TemporaryDirectory() as tmp:
-        p = os.path.join(tmp, "c01.db")
-        open(p, "wb").write(decifrar(c01))
-        src = sqlite3.connect(p)
-        src.create_collation("NO_CASE_2", nocase)
-        infs = src.execute("""SELECT CodigoInformativo, NumeroInformativo, DataInformativo, TituloInformativo,
-                                     OrdemInformativo, TipoInformativo, ArquivoInformativo, CategoriaInformativo
-                              FROM INFORMATIVO ORDER BY OrdemInformativo""").fetchall()
-        src.close()
-    print(f"Informativos no .c01: {len(infs)}")
+        for b in BASES:
+            if b["id"] not in no_banco:
+                continue
+            pasta = os.path.join(origem, b["pasta"])
+            p = os.path.join(tmp, b["id"] + ".db")
+            open(p, "wb").write(decifrar(os.path.join(pasta, "Configuracoes", "CatalogoExpresso.c01")))
+            src = sqlite3.connect(p)
+            src.create_collation("NO_CASE_2", nocase)
+            marca = b["marca"] if isinstance(b["marca"], str) else None
+            rows = src.execute("""SELECT CodigoInformativo, NumeroInformativo, DataInformativo, TituloInformativo,
+                                         OrdemInformativo, TipoInformativo, ArquivoInformativo, CategoriaInformativo
+                                  FROM INFORMATIVO ORDER BY OrdemInformativo""").fetchall()
+            src.close()
+            infs += [(cid + b["offset"], *r, os.path.join(pasta, "Informativos"), b["id"], marca) for cid, *r in rows]
+            print(f"Informativos {b['nome']}: {len(rows)}")
 
     # 2. imagens
     os.makedirs(PASTA_JPG, exist_ok=True)
     imagens, problemas = {}, []
-    for cid, *_, arq, _cat in infs:
+    for cid, _n, _d, _t, _o, _tp, arq, _cat, pasta_img, _b, _m in infs:
         origem = os.path.join(pasta_img, arq or "")
         if not arq or not os.path.exists(origem):
             problemas.append(f"{cid}: arquivo não encontrado ({arq})")
@@ -238,10 +255,10 @@ def main(c01, pasta_img, saida):
     db = sqlite3.connect(trabalho)
     db.executescript(SCHEMA)
     prods = {}
-    for pid, pesq, desc in db.execute("SELECT id, upper(codigo_pesq), descricao FROM produto"):
-        prods.setdefault(pesq, []).append((pid, desc))
+    for pid, pesq, desc, grupo, marca_p in db.execute("SELECT id, upper(codigo_pesq), descricao, grupo_cofap, marca FROM produto"):
+        prods.setdefault(pesq, []).append((pid, desc, grupo, marca_p))
     linhas_inf, ligacoes, conferir = [], [], []
-    for cid, num, data, tit, ordem, tipo, arq, cat in infs:
+    for cid, num, data, tit, ordem, tipo, arq, cat, _pasta, bid, marca in infs:
         tit = re.sub(r"\s+", " ", TITULO_CORRIGIDO.get(cid, tit or "")).strip()
         partes = [x.strip() for x in tit.split(" - ", 1)]
         categoria = CATEGORIAS.get(partes[0], partes[0])
@@ -258,21 +275,23 @@ def main(c01, pasta_img, saida):
             achados[re.sub(r"[^A-Z0-9]", "", c.upper())] = "manual"
         for c in CODIGOS_IGNORAR.get(cid, []):
             achados.pop(re.sub(r"[^A-Z0-9]", "", c.upper()), None)
-        cods = []
+        cods, marcas = [], Counter()
         for c, origem in achados.items():
-            for pid, desc in prods.get(c, []):
-                ok = tipo_confere(tit, desc)
+            for pid, desc, grupo, marca_p in prods.get(c, []):
+                ok = tipo_confere(tit, desc, grupo)
                 if origem == "ocr" and not ok and c.isdigit():
                     continue            # código só numérico sem bater o tipo: descarta
                 if not ok:
                     conferir.append(f"{num} ({cid}) {tit} -> {c} {desc}")
                 ligacoes.append((cid, pid, c, int(ok), origem))
                 cods.append(c)
+                marcas[marca_p] += 1
         busca = sem_acento(" ".join([num, tit, categoria, montadoras, " ".join(cods), texto]))
         busca = re.sub(r"\s+", " ", busca)
         linhas_inf.append((cid, num, (data or "")[:10], tit, ordem, tipo, arq, cat or None, categoria,
-                           montadoras, img and f"Informativos/{img}", texto, busca))
-    db.executemany("INSERT INTO informativo VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)", linhas_inf)
+                           montadoras, img and f"Informativos/{img}", texto, busca,
+                           marca or (marcas.most_common(1)[0][0] if marcas else None), bid))
+    db.executemany("INSERT INTO informativo VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", linhas_inf)
     db.executemany("INSERT OR IGNORE INTO informativo_produto VALUES(?,?,?,?,?)", ligacoes)
     db.execute("DELETE FROM origem WHERE chave = 'informativos'")
     db.execute("INSERT INTO origem VALUES('informativos', ?)", (str(len(linhas_inf)),))
@@ -316,6 +335,8 @@ def main(c01, pasta_img, saida):
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 4:
-        raise SystemExit(__doc__)
-    main(*sys.argv[1:])
+    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument("--origem", default=r"C:\ProgramData", help="pasta onde estão os catálogos instalados")
+    ap.add_argument("--saida", default=os.path.join(RAIZ, "catalogo_sistema.db"))
+    a = ap.parse_args()
+    main(a.origem, a.saida)

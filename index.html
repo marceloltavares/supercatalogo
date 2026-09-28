@@ -23,13 +23,14 @@ button,input,select{font:inherit;color:inherit}
 
 header{background:var(--grafite);color:#fff;padding:10px 16px;display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center}
 header h1{font:600 22px/1 var(--cond);margin:0;letter-spacing:.3px;white-space:nowrap}
-header .base{font-size:13px;color:#B9C4CC;white-space:nowrap}
+header .base{font-size:13px;color:#B9C4CC;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;cursor:help}
 .filtros{display:flex;flex-wrap:wrap;gap:8px;flex:1;justify-content:flex-end}
 .filtros input,.filtros select{background:#2E3F4B;border:1px solid #3F5260;border-radius:4px;padding:7px 10px;color:#fff;min-width:0}
 .filtros input::placeholder{color:#9FB0BC}
-#busca{flex:1 1 200px;max-width:380px}
-#modelo{flex:0 1 150px}
-#montadora{flex:0 1 170px}
+#busca{flex:1 1 180px;max-width:360px}
+#modelo{flex:0 1 130px}
+#montadora{flex:0 1 160px}
+#marca{flex:0 1 150px}
 .btn{background:transparent;border:1px solid #4D6272;color:#fff;border-radius:4px;padding:7px 12px;cursor:pointer}
 .btn:hover{border-color:var(--sinal)}
 
@@ -75,6 +76,10 @@ section{min-height:0;overflow:auto;border-right:1px solid var(--linha)}
 .item .cod{font:600 19px/1.2 var(--cond);grid-row:span 2;min-width:92px}
 .item .desc{font-weight:500}
 .item .pos{font-size:13px;color:var(--suave)}
+.selo{display:inline-block;font:600 11px/1.5 var(--sans);letter-spacing:.3px;text-transform:uppercase;border-radius:3px;padding:0 6px;margin-right:6px;vertical-align:1px;background:var(--aco);color:var(--tinta)}
+.selo.m-cofap{background:#F2B705;color:#13191E}
+.selo.m-mm{background:#22303A;color:#fff}
+@media (prefers-color-scheme:dark){.selo.m-mm{background:#E6E9EC;color:#13191E}}
 .mais{display:block;margin:14px auto;background:var(--grafite);color:#fff;border:0;border-radius:4px;padding:8px 18px;cursor:pointer}
 .vazio-msg{padding:32px 20px;color:var(--suave);max-width:46ch}
 
@@ -123,6 +128,7 @@ body.modo-inf #informativos{display:grid}
 .inf-filtros{position:sticky;top:0;z-index:1;background:var(--painel);padding:10px 12px;border-bottom:1px solid var(--linha);display:flex;flex-wrap:wrap;gap:6px}
 .inf-filtros input,.inf-filtros select{background:var(--fundo);border:1px solid var(--linha);border-radius:4px;padding:6px 8px;min-width:0}
 #inf-busca{flex:1 1 100%}
+#inf-marca{flex:1 1 100%}
 .inf-filtros select{flex:1 1 30%}
 .inf-total{padding:8px 12px;font-size:14px;color:var(--suave);border-bottom:1px solid var(--linha)}
 .inf-total strong{color:var(--texto)}
@@ -175,10 +181,11 @@ body.modo-inf #informativos{display:grid}
   <button class="btn" id="btn-inf" aria-pressed="false" hidden>Informativos</button>
   <div class="filtros">
     <input id="busca" type="search" placeholder="Código, referência ou texto" aria-label="Buscar">
+    <select id="marca" aria-label="Marca" hidden><option value="">Todas as marcas</option></select>
     <select id="montadora" aria-label="Montadora"><option value="">Todas as montadoras</option></select>
     <input id="modelo" type="search" placeholder="Modelo do veículo" aria-label="Modelo">
-    <button class="btn" id="limpar">Limpar filtros</button>
-    <button class="btn" id="cfg-fotos" title="Pasta onde estão as fotos dos produtos">Pasta das fotos</button>
+    <button class="btn" id="limpar" title="Limpar filtros">Limpar</button>
+    <button class="btn" id="cfg-fotos" title="Pasta onde estão as fotos dos produtos">Fotos</button>
   </div>
 </header>
 
@@ -192,6 +199,7 @@ body.modo-inf #informativos{display:grid}
   <section id="inf-lista" aria-label="Informativos técnicos">
     <div class="inf-filtros">
       <input id="inf-busca" type="search" placeholder="Título, número, código ou veículo" aria-label="Buscar informativo">
+      <select id="inf-marca" aria-label="Marca" hidden><option value="">Todas as marcas</option></select>
       <select id="inf-cat" aria-label="Categoria"><option value="">Todas as categorias</option></select>
       <select id="inf-ano" aria-label="Ano"><option value="">Todos os anos</option></select>
       <select id="inf-mes" aria-label="Mês"><option value="">Todos os meses</option></select>
@@ -203,14 +211,18 @@ body.modo-inf #informativos{display:grid}
 
 <script src="lib/sql-wasm.js"></script>
 <script src="lib/sql-wasm-bin.js"></script>
-<script src="lib/catalogo_db.js?v=20260928b" onerror="void 0"></script>
+<script src="lib/catalogo_db.js?v=20260928g" onerror="void 0"></script>
 <script>
 "use strict";
 let db = null;
 let linhas = [], linhaPorId = new Map();
 let porId = new Map(), filhosDe = new Map();
-const estado = { linha: 1, no: null, busca: "", montadora: "", modelo: "", limite: 100, produto: null };
+const estado = { linha: 1, no: null, busca: "", marca: "", montadora: "", modelo: "", limite: 100, produto: null };
+let temMarca = false;
+const classeMarca = m => /cofap/i.test(m || "") ? "m-cofap" : /marelli/i.test(m || "") ? "m-mm" : "";
+const selo = m => m ? `<span class="selo ${classeMarca(m)}">${esc(m)}</span>` : "";
 let pastaFotos = "FotoProd/";
+if (location.protocol.startsWith("http")) document.getElementById("cfg-fotos").hidden = true;  // no site as fotos vêm sempre de FotoProd/
 try { pastaFotos = localStorage.getItem("pastaFotos") || pastaFotos; } catch (e) {}
 
 const $ = s => document.querySelector(s);
@@ -269,7 +281,21 @@ if (window.CATALOGO_DB_B64) {
 /* ---------- Montagem ---------- */
 function montar() {
   const o = Object.fromEntries(q("SELECT chave, valor FROM origem").map(r => [r.chave, r.valor]));
-  $("#base").textContent = `Base Cofap v${o.versao} de ${o.data_emissao.split("-").reverse().join("/")}`;
+  const dataBr = d => (d || "").split("-").reverse().join("/");
+  const bases = Object.keys(o).filter(k => k.startsWith("base_")).map(k => o[k].split("|"));
+  if (bases.length > 1) {
+    const datas = bases.map(b => b[1]).sort();
+    $("#base").textContent = datas[0] === datas.at(-1) ? `Bases de ${dataBr(datas[0])}` : `Bases de ${dataBr(datas[0]).slice(0, 5)} a ${dataBr(datas.at(-1))}`;
+    $("#base").title = bases.map(b => `${b[0]}: emissão ${dataBr(b[1])}, versão ${b[2]}`).join("\n");
+  } else $("#base").textContent = `Base Cofap v${o.versao} de ${dataBr(o.data_emissao)}`;
+  try {
+    const ms = q("SELECT marca, COUNT(*) n FROM produto WHERE marca IS NOT NULL GROUP BY marca ORDER BY marca");
+    temMarca = ms.length > 1;
+    if (temMarca) {
+      $("#marca").innerHTML += ms.map(m => `<option value="${esc(m.marca)}">${esc(m.marca)}</option>`).join("");
+      $("#marca").hidden = false;
+    }
+  } catch (e) { temMarca = false; }
   linhas = q("SELECT id, nome FROM linha ORDER BY id");
   linhas.forEach(l => linhaPorId.set(l.id, l));
   for (const n of q("SELECT id, linha_id, pai_id, nivel, nome, caminho FROM arvore ORDER BY ordem")) {
@@ -305,6 +331,7 @@ function folhas(id) {
 /* ---------- Filtros → SQL ---------- */
 function clausulaFiltros(linha = estado.linha, comVeiculo = true) {
   const w = ["p.id IN (SELECT produto_id FROM produto_linha WHERE linha_id = ?)"], p = [linha];
+  if (estado.marca) { w.push("p.marca = ?"); p.push(estado.marca); }
   if (estado.busca) {
     const cod = pesq(estado.busca);
     const palavras = semAcento(estado.busca).split(/\s+/).filter(Boolean);
@@ -403,7 +430,7 @@ function desenharLista() {
   else if (estado.no != null) w.push(`p.id IN (SELECT produto_id FROM produto_arvore WHERE arvore_id IN (${folhas(estado.no).join(",")}))`);
   const where = "WHERE " + w.join(" AND ");
   const total = q(`SELECT COUNT(*) c FROM produto p ${where}`, p)[0].c;
-  const rows = q(`SELECT p.id, p.codigo, p.descricao, p.posicao, p.linha_cofap FROM produto p ${where} ORDER BY p.descricao, p.codigo LIMIT ${estado.limite}`, p);
+  const rows = q(`SELECT p.id, p.codigo, p.descricao, p.posicao, p.linha_cofap${temMarca ? ", p.marca" : ""} FROM produto p ${where} ORDER BY p.descricao, p.codigo LIMIT ${estado.limite}`, p);
   const nomeLinha = linhaPorId.get(estado.linha).nome;
   const titulo = estado.no === "sem" ? `${nomeLinha} > Sem classificação` : estado.no ? `${nomeLinha} > ${porId.get(estado.no).caminho}` : nomeLinha;
   let html = `<div class="topo-lista"><strong>${total.toLocaleString("pt-BR")}</strong> produto${total === 1 ? "" : "s"} em ${esc(titulo)}</div>`;
@@ -417,7 +444,7 @@ function desenharLista() {
       : `<p class="vazio-msg">Nenhum produto com esses filtros nesta linha.${outras.length && estado.busca ? " A busca encontra resultados em: " + outras.map(([l, n]) => `<a href="#" data-ir="${l.id}">${esc(l.nome)} (${n})</a>`).join(", ") + "." : " Tente outro modelo, outra montadora ou limpe a busca."}</p>`;
   }
   for (const r of rows)
-    html += `<button class="item${r.id === estado.produto ? " ativo" : ""}" data-id="${r.id}"><span class="cod">${esc(r.codigo)}</span><span class="desc">${esc(r.descricao)}${r.linha_cofap ? " " + esc(r.linha_cofap) : ""}</span><span class="pos">${esc(r.posicao || "")}</span></button>`;
+    html += `<button class="item${r.id === estado.produto ? " ativo" : ""}" data-id="${r.id}"><span class="cod">${esc(r.codigo)}</span><span class="desc">${esc(r.descricao)}${r.linha_cofap ? " " + esc(r.linha_cofap) : ""}</span><span class="pos">${temMarca ? selo(r.marca) : ""}${esc(r.posicao || "")}</span></button>`;
   if (total > rows.length) html += `<button class="mais" id="mais">Mostrar mais ${Math.min(100, total - rows.length)}</button>`;
   $("#lista").innerHTML = html;
   $("#mais")?.addEventListener("click", () => { estado.limite += 100; const y = $("#lista").scrollTop; desenharLista(); $("#lista").scrollTop = y; });
@@ -468,7 +495,7 @@ function mostrarProduto(id) {
   const fotos = [p.foto, p.foto2, p.foto3].filter(Boolean);
   let h = `<div class="etiqueta">${esc(p.codigo)}</div>
     <h2>${esc(p.descricao)}${p.linha_cofap ? " " + esc(p.linha_cofap) : ""}</h2>
-    <p class="meta">${esc(p.posicao || "Posição não informada")} · Grupo Cofap: ${esc(p.grupo_cofap || "—")}${p.unidade ? " · Unidade: " + esc(p.unidade) : ""} · Linha: ${esc(lins.join(", "))}</p>
+    <p class="meta">${temMarca ? selo(p.marca) : ""}${p.posicao ? esc(p.posicao) + " · " : (!temMarca || p.marca === "Cofap" ? "Posição não informada · " : "")}Grupo: ${esc(p.grupo_cofap || "—")}${p.unidade ? " · Unidade: " + esc(p.unidade) : ""} · Linha: ${esc(lins.join(", "))}</p>
     <div class="fotos">${fotos.map(f => `<img alt="Foto ${esc(p.codigo)}" data-foto="${esc(f)}">`).join("") || '<span class="sem-foto">Produto sem foto cadastrada</span>'}</div>
     <h3>Na árvore</h3>
     <ul class="caminhos">${cam.length ? cam.map(c => `<li><span class="lin">${esc(c.linha)}</span><a data-no="${c.id}" data-lin="${c.lid}">${esc(c.caminho)}</a></li>`).join("") : "<li>Sem classificação nas árvores</li>"}</ul>`;
@@ -500,9 +527,10 @@ const aoDigitar = (campo) => e => { clearTimeout(t); t = setTimeout(() => { esta
 $("#busca").addEventListener("input", aoDigitar("busca"));
 $("#modelo").addEventListener("input", aoDigitar("modelo"));
 $("#montadora").addEventListener("change", e => { estado.montadora = e.target.value; atualizar(); });
+$("#marca").addEventListener("change", e => { estado.marca = e.target.value; atualizar(); });
 $("#limpar").addEventListener("click", () => {
-  $("#busca").value = $("#modelo").value = $("#montadora").value = "";
-  Object.assign(estado, { busca: "", modelo: "", montadora: "" });
+  $("#busca").value = $("#modelo").value = $("#montadora").value = $("#marca").value = "";
+  Object.assign(estado, { busca: "", modelo: "", montadora: "", marca: "" });
   atualizar();
 });
 $("#cfg-fotos").addEventListener("click", () => {
@@ -515,7 +543,8 @@ $("#cfg-fotos").addEventListener("click", () => {
 
 /* ---------- Informativos técnicos ---------- */
 let temInf = false;
-const infEstado = { busca: "", cat: "", ano: "", mes: "", sel: null };
+const infEstado = { busca: "", marca: "", cat: "", ano: "", mes: "", sel: null };
+let infTemMarca = false;
 const MESES = ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"];
 const dataCurta = d => d ? `${MESES[+d.slice(5, 7) - 1]}/${d.slice(0, 4)}` : "";
 const dataLonga = d => d ? d.split("-").reverse().join("/") : "";
@@ -530,6 +559,11 @@ function montarInformativos() {
   try { temInf = q("SELECT COUNT(*) c FROM informativo")[0].c > 0; } catch (e) { temInf = false; }
   if (!temInf) return;
   $("#btn-inf").hidden = false;
+  try {
+    const ms = q("SELECT marca, COUNT(*) n FROM informativo WHERE marca IS NOT NULL GROUP BY marca ORDER BY marca");
+    infTemMarca = ms.length > 1;
+    if (infTemMarca) { $("#inf-marca").innerHTML += ms.map(r => `<option value="${esc(r.marca)}">${esc(r.marca)} (${r.n})</option>`).join(""); $("#inf-marca").hidden = false; }
+  } catch (e) { infTemMarca = false; }
   $("#inf-cat").innerHTML += q("SELECT categoria, COUNT(*) n FROM informativo GROUP BY categoria ORDER BY categoria")
     .map(r => `<option value="${esc(r.categoria)}">${esc(r.categoria)} (${r.n})</option>`).join("");
   $("#inf-ano").innerHTML += q("SELECT DISTINCT substr(data, 1, 4) a FROM informativo WHERE data <> '' ORDER BY a DESC")
@@ -543,8 +577,8 @@ function modoInformativos(ligar, id) {
   $("#btn-inf").textContent = ligar ? "Voltar ao catálogo" : "Informativos";
   if (!ligar) return;
   if (id) {  // vindo do produto: limpa filtros para o informativo aparecer na lista
-    Object.assign(infEstado, { busca: "", cat: "", ano: "", mes: "" });
-    ["#inf-busca", "#inf-cat", "#inf-ano", "#inf-mes"].forEach(s => $(s).value = "");
+    Object.assign(infEstado, { busca: "", marca: "", cat: "", ano: "", mes: "" });
+    ["#inf-busca", "#inf-marca", "#inf-cat", "#inf-ano", "#inf-mes"].forEach(s => $(s).value = "");
     infEstado.sel = id;
   }
   desenharInformativos();
@@ -567,16 +601,17 @@ function desenharInformativos() {
     }
     w.push("(" + partes.join(" OR ") + ")");
   }
+  if (infEstado.marca) { w.push("i.marca = ?"); p.push(infEstado.marca); }
   if (infEstado.cat) { w.push("i.categoria = ?"); p.push(infEstado.cat); }
   if (infEstado.ano) { w.push("substr(i.data, 1, 4) = ?"); p.push(infEstado.ano); }
   if (infEstado.mes) { w.push("substr(i.data, 6, 2) = ?"); p.push(infEstado.mes); }
-  const rows = q(`SELECT i.id, i.numero, i.data, i.titulo, i.imagem,
+  const rows = q(`SELECT i.id, i.numero, i.data, i.titulo, i.imagem${infTemMarca ? ", i.marca" : ""},
                     (SELECT group_concat(pr.codigo, ", ") FROM informativo_produto x JOIN produto pr ON pr.id = x.produto_id WHERE x.informativo_id = i.id) codigos
                   FROM informativo i ${w.length ? "WHERE " + w.join(" AND ") : ""} ORDER BY i.data DESC, i.ordem DESC`, p);
   let html = `<div class="inf-total"><strong>${rows.length}</strong> informativo${rows.length === 1 ? "" : "s"}</div>`;
   if (!rows.length) html += `<p class="vazio-msg">Nenhum informativo com esses filtros.</p>`;
   for (const r of rows)
-    html += `<button class="inf${r.id === infEstado.sel ? " ativo" : ""}" data-inf="${r.id}">${miniatura(r, 56)}<span class="num">${esc(r.numero)}<span>${dataCurta(r.data)}</span></span><span class="tit">${esc(r.titulo)}</span><span class="cods">${esc(r.codigos || "")}</span></button>`;
+    html += `<button class="inf${r.id === infEstado.sel ? " ativo" : ""}" data-inf="${r.id}">${miniatura(r, 56)}<span class="num">${esc(r.numero)}<span>${dataCurta(r.data)}</span></span><span class="tit">${esc(r.titulo)}</span><span class="cods">${infTemMarca ? selo(r.marca) : ""}${esc(r.codigos || "")}</span></button>`;
   $("#inf-itens").innerHTML = html;
 }
 $("#inf-itens").addEventListener("click", e => {
@@ -593,7 +628,7 @@ function mostrarInformativo(id) {
                    WHERE x.informativo_id = ? ORDER BY pr.codigo`, [id]);
   let h = `<div class="etiqueta">${esc(i.numero)}</div>
     <h2>${esc(i.titulo)}</h2>
-    <p class="meta">${dataLonga(i.data)} · ${esc(i.categoria)}${i.imagem ? ` · <a class="link-img" href="${esc(i.imagem)}" target="_blank" rel="noopener">Abrir imagem</a>` : ""}</p>
+    <p class="meta">${infTemMarca ? selo(i.marca) : ""}${dataLonga(i.data)} · ${esc(i.categoria)}${i.imagem ? ` · <a class="link-img" href="${esc(i.imagem)}" target="_blank" rel="noopener">Abrir imagem</a>` : ""}</p>
     <h3>Produtos no informativo (${prods.length})</h3>`;
   h += prods.length ? `<div class="prods">${prods.map(r => `<button data-prod="${r.id}"><b>${esc(r.codigo)}</b>${esc(r.descricao)} <small>${esc(r.posicao || "")}</small></button>`).join("")}</div>`
     : "<p>Nenhum produto do catálogo foi identificado neste informativo.</p>";
@@ -617,7 +652,7 @@ function irParaProduto(id) {
 
 let tInf;
 $("#inf-busca").addEventListener("input", e => { clearTimeout(tInf); tInf = setTimeout(() => { infEstado.busca = e.target.value.trim(); desenharInformativos(); }, 250); });
-for (const [sel, k] of [["#inf-cat", "cat"], ["#inf-ano", "ano"], ["#inf-mes", "mes"]])
+for (const [sel, k] of [["#inf-marca", "marca"], ["#inf-cat", "cat"], ["#inf-ano", "ano"], ["#inf-mes", "mes"]])
   $(sel).addEventListener("change", e => { infEstado[k] = e.target.value; desenharInformativos(); });
 </script>
 </body>

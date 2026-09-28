@@ -13,7 +13,8 @@ direito não é fundo liso, pode aparecer um pequeno defeito nessa região.
 
 Uso:
     python recuperar_fotos.py pasta_origem/FotoProd pasta_destino/FotoProd
-Os arquivos de saída ficam com o nome em minúsculas. Requer Python 3.
+Os arquivos de saída ficam com o nome em minúsculas. Fotos já convertidas (e mais novas que a
+original) são puladas, então dá para rodar de novo a cada atualização. Requer Python 3.
 Recomendado: pip install pillow  (valida cada foto e corrige a faixa lisa que pode sobrar no
 canto inferior; sem Pillow as fotos abrem normalmente, só sem esse retoque).
 """
@@ -136,14 +137,18 @@ def main(origem, destino):
         from PIL import Image
     except ImportError:
         Image = None
-    ok = falhas = 0
+    ok = falhas = puladas = 0
     for nome in sorted(os.listdir(origem)):
         if not nome.lower().endswith((".jpg", ".jpeg")):
             continue
         caminho = os.path.join(origem, nome)
+        saida = os.path.join(destino, nome.lower())
+        if os.path.exists(saida) and os.path.getmtime(saida) >= os.path.getmtime(caminho):
+            puladas += 1          # já convertida e a original não mudou
+            continue
         try:
-            dados = recuperar(open(caminho, "rb").read())
-            saida = os.path.join(destino, nome.lower())
+            bruto = open(caminho, "rb").read()
+            dados = recuperar(bruto) if bruto.startswith(ASSINATURA) else bruto
             open(saida, "wb").write(dados)
             if Image:
                 limpar_final(saida, Image, tamanho_mcu(dados))
@@ -151,7 +156,7 @@ def main(origem, destino):
         except Exception as e:
             falhas += 1
             print(f"Falha em {nome}: {e}")
-    print(f"{ok} fotos recuperadas, {falhas} falhas -> {destino}")
+    print(f"{ok} fotos recuperadas, {puladas} já estavam prontas, {falhas} falhas -> {destino}")
 
 
 if __name__ == "__main__":
