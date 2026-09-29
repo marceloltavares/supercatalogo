@@ -211,11 +211,42 @@ body.modo-inf #informativos{display:grid}
 .no.no-caminho:not(.ativo) .nome{color:var(--roxo)}
 @media (prefers-color-scheme:dark){.no.no-caminho:not(.ativo) .nome{color:#C9B1F2}}
 .no.vazio{opacity:1}.no.vazio .nome,.no.vazio .qtd,.no.vazio .seta{opacity:.45}
+
+/* ---------- Abertura: fundo hyperspeed ---------- */
+#abertura{background:#0B0616;overflow:hidden;transition:opacity .7s ease}
+#abertura #hiper{position:absolute;inset:0;width:100%;height:100%;display:block;transition:transform 1.2s cubic-bezier(.5,0,.2,1)}
+#abertura .caixa{position:relative;z-index:1;text-shadow:0 2px 18px rgba(11,6,22,.8)}
+#abertura .barra{width:220px;height:3px;border-radius:3px;background:rgba(255,255,255,.14);overflow:hidden;margin-top:4px}
+#abertura .barra::after{content:"";display:block;width:40%;height:100%;border-radius:3px;background:linear-gradient(90deg,#9B6BE8,#D856BF);animation:barra 1.3s ease-in-out infinite}
+@keyframes barra{0%{transform:translateX(-100%)}100%{transform:translateX(260%)}}
+#abertura label:not([hidden]) ~ .barra{display:none}
+#abertura.saindo{opacity:0;pointer-events:none}
+#abertura.saindo #hiper{transform:scale(1.25)}
+
+/* ---------- Barra de rolagem ---------- */
+:root{--rolo:rgba(107,53,181,.28);--rolo-hover:linear-gradient(180deg,#6B35B5,#4E1F85)}
+@media (prefers-color-scheme:dark){:root{--rolo:rgba(155,107,232,.3);--rolo-hover:linear-gradient(180deg,#B79CF0,#9B6BE8)}}
+*{scrollbar-width:thin;scrollbar-color:var(--sinal) transparent}
+@supports selector(::-webkit-scrollbar){*{scrollbar-width:auto;scrollbar-color:auto}}
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-track:vertical{background:linear-gradient(90deg,transparent 4px,var(--linha) 4px,var(--linha) 6px,transparent 6px)}
+::-webkit-scrollbar-track:horizontal{background:linear-gradient(180deg,transparent 4px,var(--linha) 4px,var(--linha) 6px,transparent 6px)}
+::-webkit-scrollbar-thumb{background:var(--rolo);border:3px solid transparent;background-clip:padding-box;border-radius:999px;min-height:40px}
+section:hover::-webkit-scrollbar-thumb,.tabela:hover::-webkit-scrollbar-thumb{background:var(--rolo-hover);background-clip:padding-box;border:3px solid transparent}
+::-webkit-scrollbar-thumb:hover{background:var(--rolo-hover);background-clip:padding-box;border-width:2px}
+::-webkit-scrollbar-thumb:active{background:linear-gradient(180deg,#D856BF,#7A45C8);background-clip:padding-box;border-width:2px}
+::-webkit-scrollbar-corner{background:transparent}
+::-webkit-scrollbar-button{display:none}
+/* traçado aceso: acima dos galhos cinza, do topo do ramo até o item */
+.ramo>.acento{z-index:3;width:2px;margin-left:-.25px;box-shadow:0 0 6px var(--sinal)}
+.ramo>div>.no.no-caminho::before{z-index:4;border-left-width:2px;border-bottom-width:2px;filter:drop-shadow(0 0 3px var(--sinal))}
 </style>
 </head>
 <body>
 
 <div id="abertura">
+  <canvas id="hiper" aria-hidden="true"></canvas>
   <div class="caixa">
     <div class="logo-caixa"><img class="logo" src="img/logo-iatrix.svg" alt="iatrix" onerror="if(!this.dataset.r){this.dataset.r=1;this.src='https://iatrix.com.br/img/svg/logo.svg'}else{this.remove()}"></div>
     <h2>Catálogo de peças</h2>
@@ -224,8 +255,136 @@ body.modo-inf #informativos{display:grid}
     <input type="file" id="arquivo" accept=".db,.sqlite">
     <div class="solta">ou arraste o arquivo .db para cá</div>
     <div class="erro" id="erro-abertura"></div>
+    <div class="barra" aria-hidden="true"></div>
   </div>
 </div>
+<script>
+// Fundo "hyperspeed" da abertura: estrada em perspectiva com rastros de luz (canvas 2D, sem bibliotecas)
+(function () {
+  const ab = document.getElementById("abertura"), cv = document.getElementById("hiper");
+  if (!ab || !cv) return;
+  // enquanto o banco carrega: esconde o botão e mostra "Carregando"
+  ab.querySelectorAll("label, .solta").forEach(el => el.hidden = true);
+  const p = ab.querySelector("p"); if (p) p.textContent = "Carregando o catálogo…";
+
+  const ctx = cv.getContext("2d");
+  const reduzir = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const COR_ESQ = ["#D856BF", "#9B6BE8", "#C247AC", "#7A45C8"];   // indo embora (esquerda)
+  const COR_DIR = ["#FFFFFF", "#D9CCF0", "#8FD3FF", "#B79CF0"];   // vindo (direita)
+  const LARG = 10, ILHA = 1.2, FAIXAS = 3, LONGE = 320, PERTO = 0.6, ALT = 4.2;
+  let W = 0, H = 0, dpr = 1, f = 0, cx = 0, hy = 0;
+  let vel = 1, alvo = 1, t0 = performance.now(), desloc = 0, raf = 0;
+
+  function medir() {
+    dpr = Math.min(devicePixelRatio || 1, 2);
+    W = cv.clientWidth; H = cv.clientHeight;
+    cv.width = W * dpr; cv.height = H * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    cx = W / 2; hy = H * 0.46; f = Math.max(W, H) * 0.55;
+  }
+  const px = (x, z) => cx + (x / z) * f;
+  const py = (y, z) => hy + ((ALT - y) / z) * f;
+  const sorteia = a => a[(Math.random() * a.length) | 0];
+  const rnd = (a, b) => a + Math.random() * (b - a);
+
+  // carros: cada um tem dois faróis/lanternas
+  const carros = [];
+  function novoCarro(lado, zIni) {
+    const faixa = (Math.random() * FAIXAS) | 0, lw = LARG / FAIXAS;
+    const x0 = lado < 0 ? -ILHA - lw * (faixa + 0.5) : ILHA + lw * (faixa + 0.5);
+    return { lado, x: x0 + rnd(-0.6, 0.6), z: zIni ?? (lado < 0 ? rnd(PERTO, LONGE) : rnd(20, LONGE)),
+      comp: rnd(12, 46), v: lado < 0 ? rnd(40, 70) : -rnd(110, 170), cor: sorteia(lado < 0 ? COR_ESQ : COR_DIR),
+      larg: rnd(0.12, 0.2), sep: rnd(0.9, 1.2) };
+  }
+  for (let i = 0; i < 70; i++) carros.push(novoCarro(-1));
+  for (let i = 0; i < 70; i++) carros.push(novoCarro(1));
+
+  function faixaLuz(x, zA, zB, larg, cor) {   // rastro afinando para o fundo
+    const z1 = Math.max(zA, PERTO), z2 = Math.min(zB, LONGE);
+    if (z2 <= z1) return;
+    const y = 0.25;
+    const g = ctx.createLinearGradient(px(x, z1), py(y, z1), px(x, z2), py(y, z2));
+    g.addColorStop(0, cor); g.addColorStop(1, "rgba(0,0,0,0)");
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.moveTo(px(x - larg, z1), py(y, z1)); ctx.lineTo(px(x + larg, z1), py(y, z1));
+    ctx.lineTo(px(x + larg, z2), py(y, z2)); ctx.lineTo(px(x - larg, z2), py(y, z2));
+    ctx.fill();
+  }
+
+  function quad(x1, x2, z1, z2, y, cor) {
+    ctx.fillStyle = cor; ctx.beginPath();
+    ctx.moveTo(px(x1, z1), py(y, z1)); ctx.lineTo(px(x2, z1), py(y, z1));
+    ctx.lineTo(px(x2, z2), py(y, z2)); ctx.lineTo(px(x1, z2), py(y, z2)); ctx.fill();
+  }
+
+  function desenhar(dt) {
+    vel += (alvo - vel) * Math.min(1, dt * 3);
+    desloc += dt * 90 * vel;
+    ctx.globalCompositeOperation = "source-over";
+    ctx.fillStyle = "#0B0616"; ctx.fillRect(0, 0, W, H);
+    // brilho no horizonte
+    const hz = ctx.createRadialGradient(cx, hy, 0, cx, hy, Math.max(W, H) * 0.6);
+    hz.addColorStop(0, "rgba(122,69,200,.45)"); hz.addColorStop(.35, "rgba(78,31,133,.18)"); hz.addColorStop(1, "rgba(11,6,22,0)");
+    ctx.fillStyle = hz; ctx.fillRect(0, 0, W, H);
+    // pistas e ilha
+    quad(-ILHA - LARG, -ILHA, PERTO, LONGE, 0, "#120B22");
+    quad(ILHA, ILHA + LARG, PERTO, LONGE, 0, "#120B22");
+    quad(-ILHA, ILHA, PERTO, LONGE, 0, "#0D0819");
+    // faixas tracejadas
+    const passo = 14, tr = 6, lw = LARG / FAIXAS;
+    for (const lado of [-1, 1]) for (let k = 1; k < FAIXAS; k++) {
+      const x = lado * (ILHA + lw * k);
+      for (let z = passo - (desloc % passo); z < LONGE; z += passo) {
+        const a = Math.max(0, 1 - z / LONGE) * .55;
+        quad(x - .06, x + .06, Math.max(z, PERTO), z + tr, 0.01, `rgba(200,182,240,${a})`);
+      }
+    }
+    // postes de luz nas bordas da ilha
+    ctx.globalCompositeOperation = "lighter";
+    const pp = 22;
+    for (let z = pp - (desloc % pp) + 4; z < LONGE; z += pp) for (const x of [-ILHA + .15, ILHA - .15]) {
+      const a = Math.max(0, 1 - z / LONGE);
+      ctx.strokeStyle = `rgba(155,107,232,${a * .8})`; ctx.lineWidth = Math.max(1, 0.12 * f / z);
+      ctx.beginPath(); ctx.moveTo(px(x, z), py(0, z)); ctx.lineTo(px(x, z), py(1.1, z)); ctx.stroke();
+    }
+    // rastros dos carros
+    for (let i = 0; i < carros.length; i++) {
+      const c = carros[i];
+      c.z += c.v * dt * vel;
+      if (c.z > LONGE + c.comp || c.z + c.comp < 0) {
+        carros[i] = novoCarro(c.lado, c.lado < 0 ? rnd(PERTO, 20) : LONGE + rnd(0, 60)); continue;
+      }
+      const comp = c.comp * (0.6 + vel * 0.4);
+      const zA = c.z, zB = c.z + comp;
+      for (const d of [-c.sep / 2, c.sep / 2]) {
+        ctx.globalAlpha = .35; faixaLuz(c.x + d, zA, zB, c.larg * 3, c.cor);   // halo
+        ctx.globalAlpha = 1; faixaLuz(c.x + d, zA, zB, c.larg, c.cor);
+      }
+    }
+    ctx.globalAlpha = 1;
+    // vinheta
+    ctx.globalCompositeOperation = "source-over";
+    const vg = ctx.createRadialGradient(cx, H * .5, Math.min(W, H) * .3, cx, H * .5, Math.max(W, H) * .8);
+    vg.addColorStop(0, "rgba(11,6,22,0)"); vg.addColorStop(1, "rgba(11,6,22,.75)");
+    ctx.fillStyle = vg; ctx.fillRect(0, 0, W, H);
+  }
+
+  function loop(t) {
+    if (!document.body.contains(cv)) { cancelAnimationFrame(raf); removeEventListener("resize", medir); return; }
+    const dt = Math.min(.05, (t - t0) / 1000); t0 = t;
+    desenhar(dt);
+    raf = requestAnimationFrame(loop);
+  }
+  medir(); addEventListener("resize", medir);
+  if (reduzir) { desenhar(0); addEventListener("resize", () => desenhar(0)); }
+  else raf = requestAnimationFrame(loop);
+
+  // acelera enquanto segura o clique (como no original) e na saída
+  ab.addEventListener("pointerdown", e => { if (!e.target.closest("label, .solta")) alvo = 4; });
+  addEventListener("pointerup", () => { if (alvo < 6) alvo = 1; });
+  window.hiper = { acelerar() { alvo = 8; } };
+})();
+</script>
 
 <header>
   <div class="marca-topo"><img class="logo" src="img/logo-iatrix.svg" alt="iatrix" onerror="if(!this.dataset.r){this.dataset.r=1;this.src='https://iatrix.com.br/img/svg/logo.svg'}else{this.remove()}"><span class="div"></span><h1>Catálogo de peças</h1></div>
@@ -301,8 +460,8 @@ async function abrirBytes(buf) {
     let versao = "invalido";
     try { q("SELECT 1 FROM arvore LIMIT 1"); versao = "antigo"; q("SELECT 1 FROM linha LIMIT 1"); versao = "ok"; } catch (e) {}
     if (versao !== "ok") throw new Error(versao);
-    $("#abertura").remove();
     montar();
+    const abt = $("#abertura"); window.hiper?.acelerar(); abt.classList.add("saindo"); setTimeout(() => abt.remove(), 750);
   } catch (e) {
     db = null;
     $("#abertura").querySelectorAll("label, .solta").forEach(el => el.hidden = false);
@@ -327,7 +486,11 @@ if (window.CATALOGO_DB_B64) {
     abrirBytes(bin.buffer);
   }, 0);
 } else if (location.protocol.startsWith("http")) {
-  fetch("catalogo_sistema.db").then(r => r.ok ? r.arrayBuffer() : null).then(b => b && abrirBytes(b)).catch(() => {});
+  fetch("catalogo_sistema.db").then(r => r.ok ? r.arrayBuffer() : null).then(b => b ? abrirBytes(b) : pedirArquivo()).catch(pedirArquivo);
+} else pedirArquivo();
+function pedirArquivo() {
+  ab.querySelectorAll("label, .solta").forEach(el => el.hidden = false);
+  ab.querySelector("p").innerHTML = "Abra o arquivo <b>catalogo_sistema.db</b> para carregar os produtos e a árvore de classificação.";
 }
 
 /* ---------- Montagem ---------- */
