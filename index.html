@@ -241,6 +241,14 @@ section:hover::-webkit-scrollbar-thumb,.tabela:hover::-webkit-scrollbar-thumb{ba
 /* traçado aceso: acima dos galhos cinza, do topo do ramo até o item */
 .ramo>.acento{z-index:3;width:2px;margin-left:-.25px;box-shadow:0 0 6px var(--sinal)}
 .ramo>div>.no.no-caminho::before{z-index:4;border-left-width:2px;border-bottom-width:2px;filter:drop-shadow(0 0 3px var(--sinal))}
+/* traçado ao passar o mouse: acende do topo do ramo até o item */
+.ramo::before{content:"";position:absolute;left:var(--x);top:0;width:2px;margin-left:-.25px;height:var(--hh,0px);background:var(--sinal);opacity:.6;z-index:3;pointer-events:none;transition:height .22s cubic-bezier(.4,0,.2,1)}
+.ramo>div>.no:hover::before{border-color:var(--galho)}
+.ramo>div>.no.no-hover::before{border-color:var(--sinal);border-left-width:2px;border-bottom-width:2px;z-index:4;transition:border-color .15s .12s}
+.ramo>div>.no.no-caminho::before{border-color:var(--sinal)}
+/* abertura: logo branca, sem fundo */
+#abertura .logo-caixa{background:transparent;box-shadow:none;padding:0}
+#abertura .logo-caixa .logo{height:40px;filter:brightness(0) invert(1) drop-shadow(0 2px 12px rgba(11,6,22,.6))}
 </style>
 </head>
 <body>
@@ -621,6 +629,22 @@ function atualizarGalhos() {
   if (secao) { m.style.transform = `translateY(${secao.offsetTop}px)`; m.style.height = secao.offsetHeight + "px"; m.style.opacity = 1; }
   else m.style.opacity = 0;
 }
+function galhoHover(b) {
+  const nos = $("#nos");
+  nos.querySelectorAll(".no-hover").forEach(x => x.classList.remove("no-hover"));
+  nos.querySelectorAll(".ramo").forEach(r => r.style.setProperty("--hh", "0px"));
+  let d = b && b.parentElement;
+  while (d && d !== nos) {
+    const r = d.parentElement;
+    if (!r || !r.classList.contains("ramo")) break;
+    d.firstElementChild.classList.add("no-hover");
+    r.style.setProperty("--hh", d.offsetTop + "px");
+    d = r.parentElement.parentElement;
+  }
+}
+$("#nos").addEventListener("mouseover", e => galhoHover(e.target.closest(".no")));
+$("#nos").addEventListener("focusin", e => galhoHover(e.target.closest(".no")));
+$("#nos").addEventListener("mouseleave", () => galhoHover(null));
 let rafGalhos = 0;
 function acompanharGalhos(ms = 380) {  // recalcula durante a animação de abrir/fechar
   cancelAnimationFrame(rafGalhos);
