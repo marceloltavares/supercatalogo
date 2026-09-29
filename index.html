@@ -249,6 +249,15 @@ section:hover::-webkit-scrollbar-thumb,.tabela:hover::-webkit-scrollbar-thumb{ba
 /* abertura: logo branca, sem fundo */
 #abertura .logo-caixa{background:transparent;box-shadow:none;padding:0}
 #abertura .logo-caixa .logo{height:40px;filter:brightness(0) invert(1) drop-shadow(0 2px 12px rgba(11,6,22,.6))}
+/* ---------- Lente de zoom nas fotos ---------- */
+.fotos img{cursor:zoom-in;touch-action:none}
+.fotos img.com-lente{cursor:none}
+#lente-zoom{position:fixed;left:0;top:0;width:180px;height:180px;margin:-90px 0 0 -90px;border-radius:50%;pointer-events:none;z-index:50;
+  background:#fff no-repeat;border:3px solid #fff;box-shadow:0 0 0 2px var(--sinal),0 12px 32px rgba(30,23,51,.35),inset 0 0 18px rgba(30,23,51,.18);
+  opacity:0;transform:scale(.6);transition:opacity .15s,transform .18s cubic-bezier(.3,1.4,.5,1)}
+#lente-zoom.ativa{opacity:1;transform:scale(1)}
+#lente-zoom::after{content:attr(data-zoom);position:absolute;right:14px;bottom:10px;font:600 11px var(--sans);color:#fff;background:var(--roxo);border-radius:999px;padding:1px 7px;opacity:.9}
+@media (prefers-reduced-motion:reduce){#lente-zoom{transition:none}}
 </style>
 </head>
 <body>
@@ -921,6 +930,44 @@ let tInf;
 $("#inf-busca").addEventListener("input", e => { clearTimeout(tInf); tInf = setTimeout(() => { infEstado.busca = e.target.value.trim(); desenharInformativos(); }, 250); });
 for (const [sel, k] of [["#inf-marca", "marca"], ["#inf-cat", "cat"], ["#inf-ano", "ano"], ["#inf-mes", "mes"]])
   $(sel).addEventListener("change", e => { infEstado[k] = e.target.value; desenharInformativos(); });
+
+/* ---------- Lente de zoom nas fotos ---------- */
+(function () {
+  const lente = document.createElement("div"); lente.id = "lente-zoom"; document.body.appendChild(lente);
+  let img = null, zoom = 2.5, ult = null;
+  const R = 90;
+  function mover(e) {
+    if (!img) return;
+    ult = e;
+    const r = img.getBoundingClientRect(), cs = getComputedStyle(img);
+    const bl = parseFloat(cs.borderLeftWidth) + parseFloat(cs.paddingLeft), bt = parseFloat(cs.borderTopWidth) + parseFloat(cs.paddingTop);
+    const w = img.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+    const h = img.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
+    const x = Math.max(0, Math.min(w, e.clientX - r.left - bl)), y = Math.max(0, Math.min(h, e.clientY - r.top - bt));
+    lente.style.left = e.clientX + "px"; lente.style.top = e.clientY + "px";
+    lente.style.backgroundSize = `${w * zoom}px ${h * zoom}px`;
+    lente.style.backgroundPosition = `${R - 3 - x * zoom}px ${R - 3 - y * zoom}px`;
+    lente.dataset.zoom = zoom.toFixed(1).replace(".", ",") + "×";
+  }
+  function entrar(el, e) {
+    if (!el.complete || !el.naturalWidth) return;
+    img = el; img.classList.add("com-lente");
+    lente.style.backgroundImage = `url("${el.currentSrc || el.src}")`;
+    lente.classList.add("ativa"); mover(e);
+  }
+  function sair() { if (img) img.classList.remove("com-lente"); img = null; lente.classList.remove("ativa"); }
+  document.addEventListener("pointerover", e => { const el = e.target.closest && e.target.closest(".fotos img"); if (el && el !== img) entrar(el, e); });
+  document.addEventListener("pointermove", e => { if (!img) return; if (e.target !== img && !(e.pointerType === "touch")) { sair(); return; } mover(e); });
+  document.addEventListener("pointerdown", e => { const el = e.target.closest && e.target.closest(".fotos img"); if (el) { e.preventDefault(); entrar(el, e); } });
+  document.addEventListener("pointerup", e => { if (e.pointerType === "touch") sair(); });
+  document.addEventListener("pointercancel", sair);
+  document.addEventListener("scroll", sair, true);
+  // roda do mouse ajusta o zoom (1,5× a 6×)
+  document.addEventListener("wheel", e => {
+    if (!img) return; e.preventDefault();
+    zoom = Math.max(1.5, Math.min(6, zoom * (e.deltaY < 0 ? 1.15 : 1 / 1.15))); if (ult) mover(ult);
+  }, { passive: false });
+})();
 </script>
 </body>
 </html>
