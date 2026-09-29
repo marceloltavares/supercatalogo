@@ -184,6 +184,33 @@ body.modo-inf #informativos{display:grid}
 @media (max-width:700px){main{display:block;overflow:auto}section{border-right:0;overflow:visible}#arvore{max-height:40vh;overflow:auto}.marca-topo .div,header h1{display:none}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 .logo-caixa:not(:has(img)),.marca-topo:not(:has(.logo)) .div{display:none}
+
+/* ---------- Menu em galhos (árvore) ---------- */
+:root{--galho:#D3CAE2}
+@media (prefers-color-scheme:dark){:root{--galho:#3D3354}}
+#nos{position:relative}
+#nos .marcador{position:absolute;left:0;top:0;width:3px;height:0;border-radius:0 3px 3px 0;background:var(--sinal);opacity:0;pointer-events:none;z-index:2;
+  transition:transform .38s cubic-bezier(.4,0,.2,1),height .38s cubic-bezier(.4,0,.2,1),opacity .2s}
+.no{border-left:0}
+.n1>.no{padding-left:12px}
+.n2>.no{padding-left:36px}
+.n3>.no{padding-left:60px}
+.filhos{display:grid;grid-template-rows:0fr;visibility:hidden;transition:grid-template-rows .3s cubic-bezier(.4,0,.2,1),visibility 0s .3s}
+.aberto+.filhos{display:grid;grid-template-rows:1fr;visibility:visible;transition:grid-template-rows .3s cubic-bezier(.4,0,.2,1),visibility 0s}
+.ramo{position:relative;min-height:0;overflow:hidden;--h:0px}
+.n1>.filhos>.ramo{--x:19px}
+.n2>.filhos>.ramo{--x:43px}
+.n3>.filhos>.ramo{--x:67px}
+.ramo>div{position:relative}
+.ramo>div:not(:last-of-type)::before{content:"";position:absolute;left:var(--x);top:0;bottom:0;border-left:1.5px solid var(--galho)}
+.ramo>div>.no{position:relative}
+.ramo>div>.no::before{content:"";position:absolute;left:var(--x);top:0;height:50%;width:13px;border-left:1.5px solid var(--galho);border-bottom:1.5px solid var(--galho);border-bottom-left-radius:9px;transition:border-color .15s;z-index:1}
+.ramo>.acento{position:absolute;left:var(--x);top:0;width:1.5px;height:var(--h);background:var(--sinal);z-index:1;transition:height .35s cubic-bezier(.4,0,.2,1)}
+.ramo>div>.no.no-caminho::before{border-color:var(--sinal);transition:border-color .2s .28s}
+.ramo>div>.no:hover::before{border-color:var(--sinal)}
+.no.no-caminho:not(.ativo) .nome{color:var(--roxo)}
+@media (prefers-color-scheme:dark){.no.no-caminho:not(.ativo) .nome{color:#C9B1F2}}
+.no.vazio{opacity:1}.no.vazio .nome,.no.vazio .qtd,.no.vazio .seta{opacity:.45}
 </style>
 </head>
 <body>
@@ -402,14 +429,41 @@ function desenharArvore() {
     for (const n of filhosDe.get(k) || []) {
       const temFilhos = filhosDe.has(n.id);
       html.push(`<div class="n${n.nivel}"><button class="no" data-id="${n.id}" aria-expanded="false"><span class="seta">${temFilhos ? "▶" : ""}</span><span class="nome">${esc(n.nome)}</span><span class="qtd" data-q="${n.id}"></span></button>`);
-      if (temFilhos) { html.push('<div class="filhos">'); rec(n.id); html.push("</div>"); }
+      if (temFilhos) { html.push('<div class="filhos"><div class="ramo"><i class="acento"></i>'); rec(n.id); html.push("</div></div>"); }
       html.push("</div>");
     }
   };
   html.push(`<div class="n1"><button class="no ativo" data-id="todos"><span class="seta"></span><span class="nome">Todos os produtos</span><span class="qtd" data-q="todos"></span></button></div>`);
   rec("raiz" + estado.linha);
   html.push(`<div class="sep"></div><div class="n1"><button class="no" data-id="sem"><span class="seta"></span><span class="nome">Sem classificação</span><span class="qtd" data-q="sem"></span></button></div>`);
-  $("#nos").innerHTML = html.join("");
+  $("#nos").innerHTML = '<i class="marcador"></i>' + html.join("");
+  atualizarGalhos();
+}
+// Menu em galhos: tronco com curva até cada filho, linha de destaque até o item ativo e marcador na seção aberta
+function atualizarGalhos() {
+  const nos = $("#nos");
+  nos.querySelectorAll(".no-caminho").forEach(x => x.classList.remove("no-caminho"));
+  nos.querySelectorAll(".ramo").forEach(r => r.style.setProperty("--h", "0px"));
+  const at = nos.querySelector(".no.ativo"), m = nos.querySelector(".marcador");
+  let d = at && at.parentElement, secao = null;
+  while (d && d !== nos) {
+    const r = d.parentElement;
+    if (r && r.classList.contains("ramo")) {
+      d.firstElementChild.classList.add("no-caminho");
+      r.style.setProperty("--h", d.offsetTop + "px");
+      d = r.parentElement.parentElement;
+    } else { secao = d.firstElementChild; break; }
+  }
+  if (!m) return;
+  if (secao) { m.style.transform = `translateY(${secao.offsetTop}px)`; m.style.height = secao.offsetHeight + "px"; m.style.opacity = 1; }
+  else m.style.opacity = 0;
+}
+let rafGalhos = 0;
+function acompanharGalhos(ms = 380) {  // recalcula durante a animação de abrir/fechar
+  cancelAnimationFrame(rafGalhos);
+  const fim = performance.now() + ms;
+  const passo = () => { atualizarGalhos(); if (performance.now() < fim) rafGalhos = requestAnimationFrame(passo); };
+  passo();
 }
 $("#nos").addEventListener("click", e => {
   const b = e.target.closest(".no"); if (!b) return;
@@ -427,6 +481,7 @@ function selecionarNo(id, abrir) {
     b.classList.add("ativo");
     if (abrir) { let el = b.parentElement; while (el && el.id !== "nos") { if (el.classList.contains("filhos")) el.previousElementSibling.classList.add("aberto"); el = el.parentElement; } b.scrollIntoView({ block: "nearest" }); }
   }
+  acompanharGalhos();
   estado.limite = 100; contarArvore(); desenharLista();
 }
 
